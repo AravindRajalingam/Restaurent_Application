@@ -1,15 +1,18 @@
 import { useState } from 'react'
 import './App.css'
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import Authentication from './components/Authentication.jsx';
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
-  
-      <div>
-          <h1 className='bg-red-400'>hello</h1>
-      </div>
-    
+    <div>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Authentication />} />          
+        </Routes>
+      </BrowserRouter>
+    </div>
   )
 }
 

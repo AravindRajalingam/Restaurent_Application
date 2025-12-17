@@ -52,10 +52,10 @@ export const createPaymentOrder = async (req, res) => {
     //   .select()
     //   .single();
 
-    if (error) {
-      console.error("Supabase insert error:", error);
-      return res.status(500).json({ success: false, message: "Failed to create order in DB" });
-    }
+    // if (error) {
+    //   console.error("Supabase insert error:", error);
+    //   return res.status(500).json({ success: false, message: "Failed to create order in DB" });
+    // }
 
     res.json({ success: true, order });
   } catch (err) {

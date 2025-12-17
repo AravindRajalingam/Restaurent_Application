@@ -24,7 +24,7 @@ const razorpay = new Razorpay({
  * CREATE RAZORPAY ORDER
  */
 export const createPaymentOrder = async (req, res) => {
-  const { amount, userId } = req.body; // userId from your frontend to store in DB
+  const { amount } = req.body; // userId from your frontend to store in DB
 
   try {
     if (!amount || amount < 1) {
@@ -39,23 +39,22 @@ export const createPaymentOrder = async (req, res) => {
     });
 
     // Insert order in Supabase
-    // const { data: dbOrder, error } = await supabase
-    //   .from("orders")
-    //   .insert([
-    //     {
-    //       id: order.id,             // use Razorpay order id as PK
-    //       user_id: userId,
-    //       total_amount: amount,
-    //       payment_status: "Pending"
-    //     }
-    //   ])
-    //   .select()
-    //   .single();
+    const { data: dbOrder, error } = await supabase
+      .from("orders")
+      .insert([
+        {
+          user_id: req.user.id,
+          total_amount: amount,
+          payment_status: "Pending"
+        }
+      ])
+      .select()
+      .single();
 
-    // if (error) {
-    //   console.error("Supabase insert error:", error);
-    //   return res.status(500).json({ success: false, message: "Failed to create order in DB" });
-    // }
+    if (error) {
+      console.error("Supabase insert error:", error);
+      return res.status(500).json({ success: false, message: "Failed to create order in DB" });
+    }
 
     res.json({ success: true, order });
   } catch (err) {

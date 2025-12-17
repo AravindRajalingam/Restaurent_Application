@@ -32,10 +32,12 @@ const PaymentButton = () => {
           contact: "9342055679"            // optional mobile number
         },
         handler: async function (response) {
+          const access_token = localStorage.getItem("access_token")
+
           // 2. Verify payment on backend
           const verifyRes = await fetch("http://localhost:5000/api/payments/verify-payment", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${access_token}` },
             body: JSON.stringify({
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,

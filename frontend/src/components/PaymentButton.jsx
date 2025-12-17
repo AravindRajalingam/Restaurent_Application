@@ -4,12 +4,11 @@ const PaymentButton = () => {
   const handlePayment = async () => {
     try {
       const access_token = localStorage.getItem("access_token")
-      const userId = ""
       // 1. Create order on backend
       const createOrderRes = await fetch("http://localhost:5000/api/payments/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${access_token}` },
-        body: JSON.stringify({ amount: 1,userId }), // INR,
+        body: JSON.stringify({ amount: 1 }), // INR,
 
       });
 

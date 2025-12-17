@@ -5,6 +5,6 @@ import { protect } from '../middleware/auth.middleware.js'
 const router = express.Router()
 
 router.post('/create-order', protect, createPaymentOrder)
-router.post('/verify', protect, verifyPayment)
+router.post('/verify-payment', protect, verifyPayment)
 
 export default router

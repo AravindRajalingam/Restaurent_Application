@@ -1,6 +1,6 @@
 import Razorpay from 'razorpay'
 import crypto from 'crypto'
-import { supabase } from '../config/supabaseClient.js'
+import { supabase } from '../Config/supabaseClient.js'
 import dotenv from "dotenv"
 dotenv.config()
 

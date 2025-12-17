@@ -2,6 +2,7 @@ import { useState } from 'react'
 import './App.css'
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import Authentication from './components/Authentication.jsx';
+import PaymentButton from './components/PaymentButton.jsx';
 
 function App() {
 
@@ -9,7 +10,8 @@ function App() {
     <div>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Authentication />} />          
+          <Route path="/" element={<Authentication />} />  
+          <Route path="/pay" element={<PaymentButton />} />          
         </Routes>
       </BrowserRouter>
     </div>

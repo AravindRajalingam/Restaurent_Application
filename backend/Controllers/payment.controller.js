@@ -44,7 +44,7 @@ export const createPaymentOrder = async (req, res) => {
       .insert([
         {
           user_id: req.user.id,
-          order_id: order.id,
+          razorpay_order_id: order.id,
           total_amount: amount,
           payment_status: "Pending"
         }
@@ -89,7 +89,7 @@ export const verifyPayment = async (req, res) => {
         payment_status: "Paid",
         payment_id: razorpay_payment_id
       })
-      .eq("order_id", razorpay_order_id)
+      .eq("razorpay_order_id", razorpay_order_id)
       .select()
       .single();
 

@@ -1,4 +1,5 @@
 import { supabase } from "../Config/supabaseClient.js"
+// import jwt from "jsonwebtoken";
 
 export const signup = async (req, res) => {
   try {
@@ -102,3 +103,46 @@ export const signin = async (req, res) => {
   }
 };
 
+export const getMe = async (req, res) => {
+  try {
+    // 1️⃣ Get token
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({ message: "No token provided" });
+    }
+
+    // 2️⃣ Validate token & get auth user
+    const { data: authData, error: authError } =
+      await supabase.auth.getUser(token);
+
+    if (authError || !authData?.user) {
+      return res.status(401).json({ message: "Invalid token" });
+    }
+
+    const userId = authData.user.id;
+
+    // 3️⃣ Get profile data using user ID
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("name")
+      .eq("id", userId)
+      .single();
+
+    if (profileError) {
+      return res.status(500).json({
+        message: "Profile not found",
+      });
+    }
+
+    // 4️⃣ Send clean response to frontend
+    res.json({
+      user: {
+        id: userId,
+        email: authData.user.email,
+        name: profile.name,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};

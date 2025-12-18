@@ -167,6 +167,7 @@
 
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Authentication() {
   const states = [
@@ -181,6 +182,7 @@ export default function Authentication() {
   const [resMessage, setResMessage] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleStateChange = (e) => {
     const stateName = e.target.value;
@@ -217,6 +219,7 @@ export default function Authentication() {
         setErrorMessage(result.message || "Signup failed");
       } else {
         setResMessage(result.message);
+        navigate("/auth");
       }
     } catch (err) {
       setErrorMessage("Network error. Please try again.");
@@ -248,6 +251,7 @@ export default function Authentication() {
       } else {
         setResMessage(result.message || "Signin successful");
         localStorage.setItem("access_token", result.access_token);
+        navigate("/");
       }
     } catch (err) {
       setErrorMessage("Network error. Please try again.");
@@ -256,46 +260,164 @@ export default function Authentication() {
     }
   };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-tr from-purple-100 via-pink-50 to-yellow-50 p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 md:p-8">
-        {showSignupForm ? (
+ return (
+  <div
+    className="min-h-screen flex items-center justify-center bg-cover bg-center relative"
+    style={{
+      backgroundImage:
+        "url('https://images.unsplash.com/photo-1600891964599-f61ba0e24092')",
+    }}
+  >
+    {/* Dark overlay */}
+    <div className="absolute inset-0 bg-black/60"></div>
+
+    {/* Auth Card */}
+    <div className="relative w-full max-w-4xl mx-4 grid md:grid-cols-2 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-xl bg-white/10 border border-white/20">
+
+      {/* LEFT BRAND */}
+     <div
+  className="hidden md:flex flex-col justify-center items-center text-center p-10 text-white relative bg-cover bg-center"
+  style={{
+    backgroundImage:
+      "url('https://images.unsplash.com/photo-1552566626-52f8b828add9')",
+  }}
+>
+  {/* Dark blue overlay */}
+  <div className="absolute inset-0 bg-[#0a2540]/85"></div>
+
+  {/* Content */}
+  <div className="relative z-10">
+    <h1 className="text-4xl font-extrabold tracking-wide mb-4">
+      Mu Family Restaurant
+    </h1>
+
+    <p className="text-sm text-blue-200 leading-relaxed max-w-xs">
+      Delicious food, seamless ordering, and an unforgettable dining experience.
+    </p>
+
+    <div className="mt-6 inline-block px-4 py-1 rounded-full border border-blue-300 text-blue-200 text-sm tracking-wide">
+      Since 2024
+    </div>
+  </div>
+</div>
+
+
+
+      {/* RIGHT FORM */}
+      <div className="card-body bg-base-100/90">
+
+        {/* Tabs */}
+        <div className="tabs tabs-boxed justify-center mb-6">
+          <a
+            className={`tab ${!showSignupForm ? "tab-active" : ""}`}
+            onClick={() => setShowSignupForm(false)}
+          >
+            Sign In
+          </a>
+          <a
+            className={`tab ${showSignupForm ? "tab-active" : ""}`}
+            onClick={() => setShowSignupForm(true)}
+          >
+            Sign Up
+          </a>
+        </div>
+
+        {/* SIGN IN */}
+        {!showSignupForm && (
           <>
-            <h2 className="text-2xl font-bold text-purple-700 text-center mb-6">Sign Up</h2>
-            <form onSubmit={handleSignup} className="flex flex-col gap-4">
+            <h2 className="text-2xl font-bold text-center mb-4">
+              Welcome Back 
+            </h2>
+
+            <form onSubmit={handleSignin} className="space-y-4">
+
               <input
                 type="email"
                 name="email"
                 placeholder="Email"
+                className="input input-bordered w-full"
                 required
-                className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
+
               <input
                 type="password"
                 name="password"
                 placeholder="Password"
+                className="input input-bordered w-full"
                 required
-                className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
+
+              {errorMessage && (
+                <div className="alert alert-error text-sm">
+                  {errorMessage}
+                </div>
+              )}
+
+              {resMessage && (
+                <div className="alert alert-success text-sm">
+                  {resMessage}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className="btn btn-primary w-full"
+                disabled={loading}
+              >
+                {loading && <span className="loading loading-spinner"></span>}
+                Sign In
+              </button>
+
+            </form>
+          </>
+        )}
+
+        {/* SIGN UP */}
+        {showSignupForm && (
+          <>
+            <h2 className="text-2xl font-bold text-center mb-4">
+              Create Your Account 
+            </h2>
+
+            <form onSubmit={handleSignup} className="space-y-4">
+
+              <input
+                type="email"
+                name="email"
+                placeholder="Email"
+                className="input input-bordered w-full"
+                required
+              />
+
+              <input
+                type="password"
+                name="password"
+                placeholder="Password"
+                className="input input-bordered w-full"
+                required
+              />
+
               <input
                 type="text"
                 name="name"
-                placeholder="Name"
-                className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                placeholder="Full Name"
+                className="input input-bordered w-full"
               />
+
               <input
                 type="number"
                 name="mobile"
                 placeholder="Mobile Number"
+                className="input input-bordered w-full"
                 required
-                className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
+
               <select
+                name="state"
                 value={selectedState}
                 onChange={handleStateChange}
-                name="state"
+                className="select select-bordered w-full"
                 required
-                className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
               >
                 <option value="">Select State</option>
                 {states.map((state) => (
@@ -304,11 +426,12 @@ export default function Authentication() {
                   </option>
                 ))}
               </select>
+
               <select
-                disabled={!selectedState}
                 name="city"
+                className="select select-bordered w-full"
+                disabled={!selectedState}
                 required
-                className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
               >
                 <option value="">Select City</option>
                 {cities.map((city) => (
@@ -317,88 +440,51 @@ export default function Authentication() {
                   </option>
                 ))}
               </select>
+
               <input
                 type="text"
                 name="address"
                 placeholder="Address"
+                className="input input-bordered w-full"
                 required
-                className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
+
               <input
                 type="number"
                 name="pincode"
-                placeholder="PinCode"
+                placeholder="Pincode"
+                className="input input-bordered w-full"
                 required
-                className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
 
-              {errorMessage && <div className="text-red-600 text-sm">{errorMessage}</div>}
-              {resMessage && <div className="text-green-600 text-sm">{resMessage}</div>}
+              {errorMessage && (
+                <div className="alert alert-error text-sm">
+                  {errorMessage}
+                </div>
+              )}
+
+              {resMessage && (
+                <div className="alert alert-success text-sm">
+                  {resMessage}
+                </div>
+              )}
 
               <button
                 type="submit"
+                className="btn btn-primary w-full"
                 disabled={loading}
-                className={`w-full py-2 rounded-lg text-white font-semibold transition-colors ${
-                  loading ? "bg-purple-300 cursor-not-allowed" : "bg-purple-600 hover:bg-purple-700"
-                }`}
               >
-                {loading ? "Signing up..." : "Sign Up"}
-              </button>
-
-              <p className="text-center text-gray-500 mt-2">Already have an account?</p>
-              <button
-                type="button"
-                onClick={() => setShowSignupForm(false)}
-                className="w-full py-2 border border-purple-600 rounded-lg text-purple-600 hover:bg-purple-50 transition-colors"
-              >
-                Sign In
-              </button>
-            </form>
-          </>
-        ) : (
-          <>
-            <h2 className="text-2xl font-bold text-purple-700 text-center mb-6">Sign In</h2>
-            <form onSubmit={handleSignin} className="flex flex-col gap-4">
-              <input
-                type="email"
-                name="email"
-                placeholder="Email"
-                required
-                className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              />
-              <input
-                type="password"
-                name="password"
-                placeholder="Password"
-                required
-                className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              />
-
-              {errorMessage && <div className="text-red-600 text-sm">{errorMessage}</div>}
-              {resMessage && <div className="text-green-600 text-sm">{resMessage}</div>}
-
-              <button
-                type="submit"
-                disabled={loading}
-                className={`w-full py-2 rounded-lg text-white font-semibold transition-colors ${
-                  loading ? "bg-purple-300 cursor-not-allowed" : "bg-purple-600 hover:bg-purple-700"
-                }`}
-              >
-                {loading ? "Signing in..." : "Sign In"}
-              </button>
-
-              <p className="text-center text-gray-500 mt-2">Don't have an account?</p>
-              <button
-                type="button"
-                onClick={() => setShowSignupForm(true)}
-                className="w-full py-2 border border-purple-600 rounded-lg text-purple-600 hover:bg-purple-50 transition-colors"
-              >
+                {loading && <span className="loading loading-spinner"></span>}
                 Sign Up
               </button>
+
             </form>
           </>
         )}
+
+      </div>
     </div>
-    </div>
-  );
+  </div>
+);
+
 }

@@ -3,6 +3,7 @@ import './App.css'
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import Authentication from './components/Authentication.jsx';
 import PaymentButton from './components/PaymentButton.jsx';
+import Home from './components/Home.jsx';
 
 function App() {
 
@@ -10,8 +11,9 @@ function App() {
     <div>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Authentication />} />  
-          <Route path="/pay" element={<PaymentButton />} />          
+          <Route path="/auth" element={<Authentication />} />  
+          <Route path="/pay" element={<PaymentButton />} />
+          <Route path="/" element={<Home />} />          
         </Routes>
       </BrowserRouter>
     </div>

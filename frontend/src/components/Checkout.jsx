@@ -23,7 +23,7 @@ export default function Checkout() {
 
     if (method === "online") {
       setLoading(true);
-      startPayment(amount,navigate);
+      startPayment(amount,navigate,setLoading);
     } else if (method === "cod") {
       // Cash on delivery
       localStorage.removeItem("cart");
@@ -104,7 +104,7 @@ export default function Checkout() {
 
           {/* INFO ALERT */}
           <div className="alert alert-info mt-6">
-            <span>✅ Please review your order before confirming payment.</span>
+            <span>Please review your order before confirming payment.</span>
           </div>
 
           {/* ACTION BUTTONS */}

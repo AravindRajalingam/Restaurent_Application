@@ -1,8 +1,6 @@
-import React from "react";
-
-
-export async function startPayment(amount, navigate) {
+export async function startPayment(amount, navigate, setLoading) {
   const API_URL = import.meta.env.VITE_API_URL;
+  setLoading(true); // 🔹 move here
 
   try {
     const access_token = localStorage.getItem("access_token");
@@ -21,6 +19,7 @@ export async function startPayment(amount, navigate) {
 
     if (!data.success) {
       alert("Failed to create order");
+      setLoading(false); // 🔹 reset on failure
       return;
     }
 
@@ -34,11 +33,7 @@ export async function startPayment(amount, navigate) {
       name: "Restaurant App",
       description: "Food Order Payment",
       order_id: razorpayOrder.id,
-      prefill: {
-        name: "Aravind R",
-        email: "example@email.com",
-        contact: "9342055679",
-      },
+
       handler: async function (response) {
         try {
           const verifyRes = await fetch(`${API_URL}/payments/verify-payment`, {
@@ -58,12 +53,8 @@ export async function startPayment(amount, navigate) {
           const verifyData = await verifyRes.json();
 
           if (verifyData.success) {
-            // alert("Payment successful and verified!");
-
-            // ✅ Clear cart from localStorage
             localStorage.removeItem("cart");
 
-            // ✅ Navigate to success page
             navigate("/payment-success", {
               state: { orderNumber: orderId, amount: amount.toFixed(2) },
             });
@@ -73,8 +64,18 @@ export async function startPayment(amount, navigate) {
         } catch (err) {
           console.error(err);
           alert("Verification error");
+        } finally {
+          setLoading(false); // ✅ stop loading after success or verification fail
         }
       },
+
+      modal: {
+        ondismiss: function () {
+          console.log("Payment cancelled"); // debug
+          setLoading(false); // ✅ stop loading if user cancels
+        },
+      },
+
       theme: { color: "#11046fff" },
     };
 
@@ -84,8 +85,6 @@ export async function startPayment(amount, navigate) {
   } catch (err) {
     console.error(err);
     alert("Payment failed. Try again.");
+    setLoading(false); // 🔹 reset on error
   }
 }
-
-
-

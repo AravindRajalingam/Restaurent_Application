@@ -8,6 +8,7 @@ import Cart from './components/Cart.jsx';
 import Layout from './components/Layout.jsx';
 import About from './components/About.jsx';
 import Contact from './components/Contact.jsx';
+import Checkout from './components/Checkout.jsx';
 
 function App() {
 
@@ -24,6 +25,7 @@ function App() {
             <Route path="/cart" element={<Cart />} />
             <Route path="/about-us" element={<About/>} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/checkout" element={<Checkout />} />
           </Route>
 
         </Routes>

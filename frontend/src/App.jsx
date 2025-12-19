@@ -1,7 +1,6 @@
 import './App.css'
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import Authentication from './components/Authentication.jsx';
-import PaymentButton from './components/Utils/PaymentButton.jsx';
 import Home from './components/Home.jsx';
 import MenuItems from './components/MenuItems.jsx';
 import Cart from './components/Cart.jsx';
@@ -17,7 +16,6 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/auth" element={<Authentication />} />
-          <Route path="/pay" element={<PaymentButton />} />
 
           <Route element={<Layout />}>
             <Route path="/" element={<Home />} />

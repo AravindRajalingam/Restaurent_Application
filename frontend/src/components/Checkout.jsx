@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { formatINR } from "./Utils/INR";
 import { useNavigate } from "react-router-dom";
+import { startPayment } from "./Utils/Payment";
+
 
 export default function Checkout() {
   const [cart] = useState(() => {
@@ -99,7 +101,7 @@ export default function Checkout() {
           <div className="flex flex-col items-center mt-8 gap-4">
             <button
               className="btn btn-primary w-1/2"
-              onClick={() => alert("Order placed!")}
+              onClick={() => startPayment(grandTotal)}
             >
               Confirm Order
             </button>

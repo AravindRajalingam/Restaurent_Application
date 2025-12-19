@@ -9,6 +9,8 @@ export default function Navbar() {
   const navRef = useRef(null);
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const API_URL = import.meta.env.VITE_API_URL;
+
 
   // Close menus on outside click
   useEffect(() => {
@@ -20,6 +22,49 @@ export default function Navbar() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+
+
+
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+
+    if (!token) {
+      setUser(null);
+      return;
+    }
+
+    const fetchUser = async () => {
+      try {
+        const res = await fetch(`${API_URL}/auth/me`, {
+          headers: {
+            Authorization: `Bearer ${token}`, // ✅ FIXED
+          },
+        });
+
+        if (!res.ok) {
+          throw new Error("Unauthorized");
+        }
+
+        const data = await res.json();
+        setUser(data.user);
+      } catch (err) {
+        localStorage.removeItem("access_token");
+        setUser(null);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+
+  const handleLogout = () => {
+    localStorage.removeItem("access_token"); // better than clear()
+    setUser(null);
+    setOpenMenu(null);
+  };
+
+
 
   return (
     <>
@@ -54,9 +99,9 @@ export default function Navbar() {
               rounded-none sm:rounded-xl
               shadow-2xl p-3 transition-all
               ${openMenu === "menu"
-                ? "opacity-100 scale-100"
-                : "opacity-0 scale-95 pointer-events-none"
-              }`}
+                  ? "opacity-100 scale-100"
+                  : "opacity-0 scale-95 pointer-events-none"
+                }`}
             >
               {["Home", "Item Menu", "About Us", "Contact"].map((item) => (
                 <li key={item}>
@@ -158,9 +203,9 @@ export default function Navbar() {
               bg-[#020617]/95 backdrop-blur-md
               rounded-xl shadow-2xl p-4 transition-all
               ${openMenu === "profile"
-                ? "opacity-100 scale-100"
-                : "opacity-0 scale-95 pointer-events-none"
-              }`}
+                  ? "opacity-100 scale-100"
+                  : "opacity-0 scale-95 pointer-events-none"
+                }`}
             >
               {!user ? (
                 <button
@@ -174,7 +219,8 @@ export default function Navbar() {
                 <>
                   <p className="text-white font-semibold">{user.name}</p>
                   <p className="text-sm text-gray-400 mb-3">{user.email}</p>
-                  <button className="w-full text-left px-3 py-2
+                  <button onClick={handleLogout}
+                    className="w-full text-left px-3 py-2
                     text-red-400 hover:bg-red-400/10 rounded-lg">
                     Logout
                   </button>

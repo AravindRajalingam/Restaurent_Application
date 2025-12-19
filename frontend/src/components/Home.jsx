@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import hero1 from "../assets/hero1.avif"
-import hero2 from "../assets/hero2.avif"
-import hero3 from "../assets/hero3.avif"
+
 import { useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
 

@@ -1,11 +1,14 @@
 import React from "react";
 
 const PaymentButton = () => {
+
+  const API_URL = import.meta.env.VITE_API_URL;
+
   const handlePayment = async () => {
     try {
       const access_token = localStorage.getItem("access_token")
       // 1. Create order on backend
-      const createOrderRes = await fetch("http://localhost:5000/api/payments/create-order", {
+      const createOrderRes = await fetch(`${API_URL}/payments/create-order`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${access_token}` },
         body: JSON.stringify({ amount: 1 }), // INR,
@@ -35,7 +38,7 @@ const PaymentButton = () => {
           const access_token = localStorage.getItem("access_token")
 
           // 2. Verify payment on backend
-          const verifyRes = await fetch("http://localhost:5000/api/payments/verify-payment", {
+          const verifyRes = await fetch(`${API_URL}/payments/verify-payment`, {
             method: "POST",
             headers: { "Content-Type": "application/json", "Authorization": `Bearer ${access_token}` },
             body: JSON.stringify({

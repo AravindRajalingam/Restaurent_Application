@@ -16,8 +16,9 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/auth" element={<Authentication />} />
+          <Route path="/pay" element={<PaymentButton />} />
+
           <Route element={<Layout />}>
-            <Route path="/pay" element={<PaymentButton />} />
             <Route path="/" element={<Home />} />
             <Route path="/item-menu" element={<MenuItems />} />
             <Route path="/cart" element={<Cart />} />

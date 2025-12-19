@@ -169,6 +169,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+
+
 export default function Authentication() {
   const states = [
     { name: "Tamil Nadu", cities: ["Chennai", "Coimbatore", "Madurai"] },
@@ -183,6 +185,8 @@ export default function Authentication() {
   const [errorMessage, setErrorMessage] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const API_URL = import.meta.env.VITE_API_URL;
+
 
   const handleStateChange = (e) => {
     const stateName = e.target.value;
@@ -209,7 +213,7 @@ export default function Authentication() {
     };
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/signup", {
+      const res = await fetch(`${API_URL}/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -240,7 +244,7 @@ export default function Authentication() {
     };
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/signin", {
+      const res = await fetch(`${API_URL}/auth/signin`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),

@@ -9,6 +9,7 @@ import About from './components/About.jsx';
 import Contact from './components/Contact.jsx';
 import Checkout from './components/Checkout.jsx';
 import AddCategory from './components/Admin/AddCategory.jsx';
+import AddMenuItem from './components/Admin/AddMenuItem.jsx';
 
 function App() {
 
@@ -26,6 +27,7 @@ function App() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/add-category" element={<AddCategory />} />
+            <Route path="/add-menu-item" element={<AddMenuItem />} />
           </Route>
 
         </Routes>

@@ -6,7 +6,7 @@ export default function MenuPage() {
 
   const API_URL = import.meta.env.VITE_API_URL;
 
-  const [categories,setCategories] = useState([])
+  const [categories, setCategories] = useState([])
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -21,7 +21,7 @@ export default function MenuPage() {
 
       } catch (err) {
         alert(err)
-      } 
+      }
     };
 
     fetchCategories();
@@ -41,7 +41,7 @@ export default function MenuPage() {
 
       } catch (err) {
         alert(err)
-      } 
+      }
     };
 
     fetchMenuItems();
@@ -60,29 +60,96 @@ export default function MenuPage() {
   //   { id: 9, name: "Paneer Tikka", category: "Starters", price: 4.99, img: sampleimg },
   // ];
 
-  const [menuItems,setMenuItems] = useState([])
+  const [menuItems, setMenuItems] = useState([])
 
   const [selectedCategory, setSelectedCategory] = useState("Lunch");
 
-  const [cart, setCart] = useState(() => {
-    const savedCart = localStorage.getItem("cart");
-    return savedCart ? JSON.parse(savedCart) : [];
-  });
+  // const [cart, setCart] = useState(() => {
+  //   const savedCart = localStorage.getItem("cart");
+  //   return savedCart ? JSON.parse(savedCart) : [];
+  // });
 
-  const addToCart = (item) => {
-    setCart((prev) => {
-      const exist = prev.find((i) => i.id === item.id);
-      if (exist) {
-        return prev.map((i) => i.id === item.id ? { ...i, qty: i.qty + 1 } : i);
-      } else {
-        return [...prev, { ...item, qty: 1 }];
+  // const addToCart = (item) => {
+  //   setCart((prev) => {
+  //     const exist = prev.find((i) => i.id === item.id);
+  //     if (exist) {
+  //       return prev.map((i) => i.id === item.id ? { ...i, qty: i.qty + 1 } : i);
+  //     } else {
+  //       return [...prev, { ...item, qty: 1 }];
+  //     }
+  //   });
+  // };
+
+  // const removeFromCart = (id) => {
+  //   setCart((prev) => prev.filter((item) => item.id !== id));
+  // };
+
+
+
+  const [cart, setCart] = useState([]);
+
+  useEffect(() => {
+    async function fetchCart() {
+      const token = localStorage.getItem("access_token");
+
+      const res = await fetch(`${API_URL}/cart/get-cart`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await res.json();
+      if (result.success) {
+        setCart(result.data);
       }
+    }
+
+    fetchCart();
+  }, []);
+
+
+
+  const addToCart = async (item) => {
+    const token = localStorage.getItem("access_token");
+
+    await fetch(`${API_URL}/cart/add-to-cart`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        item_id: item.id,
+        price: item.price,
+      }),
     });
+
+    // refresh cart
+    const res = await fetch(`${API_URL}/cart/get-cart`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const result = await res.json();
+    setCart(result.data);
   };
 
-  const removeFromCart = (id) => {
+
+
+  const removeFromCart = async (id) => {
+    const token = localStorage.getItem("access_token");
+
+    await fetch(`${API_URL}/cart/remove-from-cart/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
     setCart((prev) => prev.filter((item) => item.id !== id));
   };
+
+
+
+
 
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cart));

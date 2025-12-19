@@ -44,7 +44,7 @@ export default function PaymentSuccess({ orderNumber, amount }) {
           </button>
           <button
             className="btn btn-outline btn-secondary"
-            onClick={() => navigate("/orders")}
+            onClick={() => navigate("/my-orders")}
           >
             View My Orders
           </button>

@@ -9,6 +9,7 @@ import About from './components/About.jsx';
 import Contact from './components/Contact.jsx';
 import Checkout from './components/Checkout.jsx';
 import PaymentSuccess from './components/PaymentSuccess.jsx';
+import Myorders from './components/MyOrders.jsx';
 
 function App() {
 
@@ -26,6 +27,7 @@ function App() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/payment-success" element={<PaymentSuccess/>}/>
+            <Route path="/my-orders" element={<Myorders/>}/>
           </Route>
 
         </Routes>

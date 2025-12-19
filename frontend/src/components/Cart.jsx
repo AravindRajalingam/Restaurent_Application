@@ -4,36 +4,82 @@ import { useNavigate } from "react-router-dom";
 
 export default function Cart() {
 
-  const [cart, setCart] = useState(() => {
-    const savedCart = localStorage.getItem("cart");
-    return savedCart ? JSON.parse(savedCart) : [];
-  });
+  const API_URL = import.meta.env.VITE_API_URL;
 
+  const [cart, setCart] = useState([]);
   const navigate = useNavigate()
 
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cart));
-  }, [cart]);
+    async function fetchCart() {
+      const token = localStorage.getItem("access_token");
 
-  const increaseCount = (id) => {
-    setCart(cart.map(item =>
-      item.id === id ? { ...item, qty: item.qty + 1 } : item
-    ));
-  };
+      const res = await fetch(`${API_URL}/cart/get-cart`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-  const decreaseCount = (id) => {
-    setCart(
-      cart
-        .map(item =>
-          item.id === id ? { ...item, qty: item.qty - 1 } : item
-        )
-        .filter(item => item.qty > 0)
+      const result = await res.json();
+      if (result.success) {
+        setCart(result.data);
+      }
+    }
+
+    fetchCart();
+  }, []);
+
+  const increaseCount = async (cartId) => {
+    const token = localStorage.getItem("access_token");
+
+    await fetch(`${API_URL}/cart/increase/${cartId}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    setCart(prev =>
+      prev.map(item =>
+        item.id === cartId ? { ...item, qty: item.qty + 1 } : item
+      )
     );
   };
 
-  const removeFromCart = (id) => {
+
+  const decreaseCount = async (cartId) => {
+    const token = localStorage.getItem("access_token");
+
+    await fetch(`${API_URL}/cart/decrease/${cartId}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    setCart(prev =>
+      prev
+        .map(item =>
+          item.id === cartId ? { ...item, qty: item.qty - 1 } : item
+        )
+        .filter(item => item.qty > 0) // ✅ disappears from UI
+    );
+  };
+
+
+
+  const removeFromCart = async (id) => {
+    const token = localStorage.getItem("access_token");
+
+    await fetch(`${API_URL}/cart/remove-from-cart/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
     setCart((prev) => prev.filter((item) => item.id !== id));
   };
+
 
   const total = cart.reduce(
     (sum, item) => sum + item.price * item.qty,
@@ -42,108 +88,108 @@ export default function Cart() {
 
   return (
     <div className="min-h-screen bg-base-200 flex items-center justify-center px-4">
-  <div className="card w-full max-w-4xl bg-base-100 shadow-2xl">
+      <div className="card w-full max-w-4xl bg-base-100 shadow-2xl">
 
-    <div className="card-body">
-      {/* HEADER */}
-      <h2 className="card-title justify-center text-2xl sm:text-3xl text-primary">
-        Your Cart
-      </h2>
+        <div className="card-body">
+          {/* HEADER */}
+          <h2 className="card-title justify-center text-2xl sm:text-3xl text-primary">
+            Your Cart
+          </h2>
 
-      <div className="divider"></div>
+          <div className="divider"></div>
 
-      {/* EMPTY CART */}
-      {cart.length === 0 ? (
-        <div className="flex flex-col items-center py-12 gap-4">
-          <div className="alert alert-warning w-full max-w-md justify-center">
-            <span>Your cart is empty</span>
-          </div>
+          {/* EMPTY CART */}
+          {cart.length === 0 ? (
+            <div className="flex flex-col items-center py-12 gap-4">
+              <div className="alert alert-warning w-full max-w-md justify-center">
+                <span>Your cart is empty</span>
+              </div>
 
-          <button
-            onClick={() => navigate("/item-menu")}
-            className="btn btn-primary w-48"
-          >
-            Buy Now
-          </button>
-        </div>
-      ) : (
-        <>
-          {/* CART ITEMS */}
-          <ul className="space-y-4">
-            {cart.map((item) => (
-              <li
-                key={item.id}
-                className="flex flex-col sm:flex-row justify-between items-center bg-base-200 rounded-xl p-4 shadow-sm gap-4"
+              <button
+                onClick={() => navigate("/item-menu")}
+                className="btn btn-primary w-48"
               >
-                {/* ITEM INFO */}
-                <div>
-                  <p className="font-bold text-lg">{item.name}</p>
-                  <p className="text-sm opacity-70">
-                    {formatINR(item.price.toFixed(2))}
-                  </p>
-                </div>
-
-                {/* ACTIONS */}
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => decreaseCount(item.id)}
-                    className="btn btn-sm btn-outline btn-error"
+                Buy Now
+              </button>
+            </div>
+          ) : (
+            <>
+              {/* CART ITEMS */}
+              <ul className="space-y-4">
+                {cart.map((item) => (
+                  <li
+                    key={item.id}
+                    className="flex flex-col sm:flex-row justify-between items-center bg-base-200 rounded-xl p-4 shadow-sm gap-4"
                   >
-                    −
-                  </button>
+                    {/* ITEM INFO */}
+                    <div>
+                      <p className="font-bold text-lg">{item.name}</p>
+                      <p className="text-sm opacity-70">
+                        {formatINR(item.price.toFixed(2))}
+                      </p>
+                    </div>
 
-                  <span className="badge badge-primary badge-lg">
-                    {item.qty}
-                  </span>
+                    {/* ACTIONS */}
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => decreaseCount(item.id)}
+                        className="btn btn-sm btn-outline btn-error"
+                      >
+                        −
+                      </button>
 
-                  <button
-                    onClick={() => increaseCount(item.id)}
-                    className="btn btn-sm btn-outline btn-primary"
-                  >
-                    +
-                  </button>
+                      <span className="badge badge-primary badge-lg">
+                        {item.qty}
+                      </span>
 
-                  <button
-                    onClick={() => removeFromCart(item.id)}
-                    className="btn btn-sm btn-outline btn-error"
-                  >
-                    Remove
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
+                      <button
+                        onClick={() => increaseCount(item.id)}
+                        className="btn btn-sm btn-outline btn-primary"
+                      >
+                        +
+                      </button>
 
-          <div className="divider divider-primary my-6"></div>
+                      <button
+                        onClick={() => removeFromCart(item.id)}
+                        className="btn btn-sm btn-outline btn-error"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
 
-          {/* TOTAL */}
-          <div className="flex justify-between items-center text-lg font-bold">
-            <span>Total</span>
-            <span className="text-primary">
-              {formatINR(total.toFixed(2))}
-            </span>
-          </div>
+              <div className="divider divider-primary my-6"></div>
 
-          {/* ACTION BUTTONS */}
-          <div className="card-actions justify-center mt-8 gap-4">
-            <button
-              onClick={() => navigate("/checkout")}
-              className="btn btn-primary w-48"
-            >
-              Proceed to Checkout
-            </button>
+              {/* TOTAL */}
+              <div className="flex justify-between items-center text-lg font-bold">
+                <span>Total</span>
+                <span className="text-primary">
+                  {formatINR(total.toFixed(2))}
+                </span>
+              </div>
 
-            <button
-              onClick={() => navigate("/item-menu")}
-              className="btn btn-outline btn-primary w-48"
-            >
-              Add More Items
-            </button>
-          </div>
-        </>
-      )}
+              {/* ACTION BUTTONS */}
+              <div className="card-actions justify-center mt-8 gap-4">
+                <button
+                  onClick={() => navigate("/checkout")}
+                  className="btn btn-primary w-48"
+                >
+                  Proceed to Checkout
+                </button>
+
+                <button
+                  onClick={() => navigate("/item-menu")}
+                  className="btn btn-outline btn-primary w-48"
+                >
+                  Add More Items
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
     </div>
-  </div>
-</div>
   );
 }

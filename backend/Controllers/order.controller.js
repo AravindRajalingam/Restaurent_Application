@@ -18,7 +18,7 @@ export const placeOrder = async (req, res) => {
       total_amount: total,
       gst_amount: gst,
       grand_total: grandTotal,
-      payment_status: 'COD',      
+      payment_status: 'COD',
       order_status: 'Placed'
     })
     .select()
@@ -59,17 +59,35 @@ export const placeOrder = async (req, res) => {
 /**
  * USER ORDER HISTORY
  */
+
 export const myOrders = async (req, res) => {
-  const { data, error } = await supabase
-    .from('orders')
-    .select('*')
-    .eq('user_id', req.user.id)
-    .order('created_at', { ascending: false })
+  try {
+    const { data, error } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('user_id', req.user.id)
+      .order('created_at', { ascending: false });
 
-  if (error) return res.status(400).json(error)
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
 
-  res.json(data)
-}
+    res.status(200).json({
+      success: true,
+      orders: data, // key 'orders' for frontend mapping
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: err.message,
+    });
+  }
+};
+
 
 /**
  * LIVE ORDER STATUS

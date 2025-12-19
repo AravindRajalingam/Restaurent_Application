@@ -5,7 +5,7 @@ import { protect } from '../middleware/auth.middleware.js'
 const router = express.Router()
 
 router.post('/', protect, placeOrder)
-router.get('/my', protect, myOrders)
+router.get('/my-orders',protect, myOrders)
 router.get('/:orderId/status', protect, orderStatus)
 
 export default router

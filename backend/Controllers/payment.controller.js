@@ -9,24 +9,11 @@ dotenv.config();
  * CALCULATE BILL (API)
  * Frontend can call this if needed
  */
-export const calculateBill = (req, res) => {
-  const { subtotal } = req.body;
-  const gstRate = 0.05;
 
-  const gst = subtotal * gstRate;
-  const grandTotal = subtotal + gst;
-
-  res.json({ subtotal, gst, grandTotal });
-};
-
-/**
- * INTERNAL BILL CALCULATION (REUSABLE)
- */
 const calculateBillInternal = (subtotal) => {
   const gstRate = 0.05;
   const gst = subtotal * gstRate;
   const grandTotal = subtotal + gst;
-
   return { subtotal, gst, grandTotal };
 };
 
@@ -35,22 +22,21 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
-/**
- * CREATE ORDER + RAZORPAY ORDER
- * payment_status → Pending
- */
 export const createPaymentOrder = async (req, res) => {
-  const { amount } = req.body; // frontend sends subtotal
+  const { cartItems } = req.body; // frontend sends cart items
 
-  if (!amount || amount <= 0) {
-    return res.status(400).json({ message: "Invalid amount" });
+  if (!cartItems || !Array.isArray(cartItems) || cartItems.length === 0) {
+    return res.status(400).json({ message: "Cart is empty or invalid" });
   }
 
   try {
-    // 1️⃣ Calculate bill internally
-    const { subtotal, gst, grandTotal } = calculateBillInternal(amount);
+    // 1️⃣ Calculate subtotal from items
+    const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.qty, 0);
 
-    // 2️⃣ Insert order into Supabase
+    // 2️⃣ Calculate GST & grand total internally
+    const { gst, grandTotal } = calculateBillInternal(subtotal);
+
+    // 3️⃣ Insert order into Supabase
     const { data: order, error } = await supabase
       .from("orders")
       .insert({
@@ -69,28 +55,26 @@ export const createPaymentOrder = async (req, res) => {
       return res.status(500).json({ message: "Order creation failed" });
     }
 
-    // 3️⃣ Create Razorpay order
+    // 4️⃣ Create Razorpay order
     const razorpayOrder = await razorpay.orders.create({
       amount: Math.round(grandTotal * 100), // paise
       currency: "INR",
-      receipt: order.id, // store DB order id
+      receipt: order.id,
     });
 
     res.json({
       success: true,
       orderId: order.id,
       razorpayOrder: razorpayOrder,
-      bill: {
-        subtotal,
-        gst,
-        grandTotal,
-      },
+      bill: { subtotal, gst, grandTotal },
     });
   } catch (err) {
     console.error("Create order error:", err);
     res.status(500).json({ message: "Payment order creation failed" });
   }
 };
+
+
 
 /**
  * VERIFY PAYMENT
@@ -126,7 +110,7 @@ export const verifyPayment = async (req, res) => {
       .update({
         payment_status: "Paid",
         payment_id: razorpay_payment_id,
-        razorpay_order_id:razorpay_order_id
+        razorpay_order_id: razorpay_order_id
       })
       .eq("id", receipt)
       .select()

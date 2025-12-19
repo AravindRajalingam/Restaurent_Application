@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { formatINR } from "./Utils/INR";
+import { useNavigate } from "react-router-dom";
 
 export default function Cart() {
 
@@ -7,6 +8,8 @@ export default function Cart() {
     const savedCart = localStorage.getItem("cart");
     return savedCart ? JSON.parse(savedCart) : [];
   });
+
+  const navigate = useNavigate()
 
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cart));
@@ -44,9 +47,14 @@ export default function Cart() {
           </h3>
 
           {cart.length === 0 ? (
-            <p className="text-gray-500 text-center py-10">
-              Your cart is empty
-            </p>
+            <div className="flex flex-col justify-center items-center">
+              <p className="text-gray-500 text-center py-10">
+                Your cart is empty
+              </p>
+              <button onClick={()=>navigate("/item-menu")} className="btn btn-outline btn-primary w-1/2 mt-5">
+                Buy Now
+              </button>
+            </div>
           ) : (
             <ul className="space-y-4">
               {cart.map(item => (
@@ -99,7 +107,7 @@ export default function Cart() {
               <button className="btn btn-outline btn-primary w-1/2 mt-6">
                 Proceed to Checkout
               </button>
-              <button className="btn btn-outline btn-primary w-1/2 mt-5">
+              <button onClick={()=>navigate("/item-menu")} className="btn btn-outline btn-primary w-1/2 mt-5">
                 Add More
               </button>
             </div>

@@ -52,76 +52,11 @@ export default function Cart() {
 
       <div className="divider"></div>
 
-<<<<<<< HEAD
       {/* EMPTY CART */}
       {cart.length === 0 ? (
         <div className="flex flex-col items-center py-12 gap-4">
           <div className="alert alert-warning w-full max-w-md justify-center">
             <span>Your cart is empty</span>
-=======
-          <div className="divider"></div>
-
-          {cart.length === 0 ? (
-            <div className="flex flex-col justify-center items-center">
-              <p className="text-gray-500 text-center py-10">
-                Your cart is empty
-              </p>
-              <button onClick={() => navigate("/item-menu")} className="btn btn-outline btn-primary w-1/2 mt-5">
-                Order Now
-              </button>
-            </div>
-          ) : (
-            <ul className="space-y-4">
-              {cart.map(item => (
-                <li
-                  key={item.id}
-                  className="flex justify-between items-center border-b border-gray-200 pb-3"
-                >
-                  <div>
-                    <p className="font-semibold text-gray-800">
-                      {item.name}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {formatINR(item.price.toFixed(2))}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => removeFromCart(item.id)}
-                      className="btn btn-sm btn-outline btn-error"
-                    >
-                      Remove
-                    </button>
-                    <button
-                      onClick={() => decreaseCount(item.id)}
-                      className="btn btn-xs sm:btn-sm btn-outline btn-error"
-                    >
-                      −
-                    </button>
-
-                    <span className="font-semibold w-6 text-center">
-                      {item.qty}
-                    </span>
-
-                    <button
-                      onClick={() => increaseCount(item.id)}
-                      className="btn btn-xs sm:btn-sm btn-outline btn-primary"
-                    >
-                      +
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-
-          <div className="divider divider-primary my-4"></div>
-
-          <div className="flex justify-center gap-5 text-lg font-bold text-gray-800">
-            <span>Total : </span>
-            <span>{formatINR(total.toFixed(2))}</span>
->>>>>>> 788224eedf0f8f277194c38581c7bc3ccec6f732
           </div>
 
           <button

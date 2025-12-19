@@ -106,7 +106,7 @@ export const addCategory = async (req, res) => {
       });
     }
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       message: "Category added successfully",
       data: data[0],
@@ -120,6 +120,98 @@ export const addCategory = async (req, res) => {
     });
   }
 };
+
+
+
+
+export const addMenuItem = async (req, res) => {
+  try {
+    const { name, description, price, is_available, category_id } = req.body;
+    const file = req.file;
+
+    // 🔍 Validation
+    if (!name || !name.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Menu item name is required",
+      });
+    }
+
+    if (!price || isNaN(price)) {
+      return res.status(400).json({
+        success: false,
+        message: "Valid price is required",
+      });
+    }
+
+    if (!file) {
+      return res.status(400).json({
+        success: false,
+        message: "Image file is required",
+      });
+    }
+
+    // 🧾 File name
+    const fileExt = file.originalname.split(".").pop();
+    const fileName = `menu-${Date.now()}.${fileExt}`;
+
+    // ⬆ Upload to Supabase Storage
+    const { error: uploadError } = await supabase.storage
+      .from("MenuItemImages")
+      .upload(fileName, file.buffer, {
+        contentType: file.mimetype,
+        upsert: false,
+      });
+
+    if (uploadError) {
+      return res.status(400).json({
+        success: false,
+        message: uploadError.message,
+      });
+    }
+
+    // 🌐 Get public URL
+    const { data: publicUrlData } = supabase.storage
+      .from("MenuItemImages")
+      .getPublicUrl(fileName);
+
+    const image_url = publicUrlData.publicUrl;
+
+    // 🧩 Insert menu item
+    const { data, error } = await supabase
+      .from("menu_items")
+      .insert([{
+        name: name.trim(),
+        description,
+        price,
+        image_url,
+        is_available: is_available ?? true,
+        category_id,
+      }])
+      .select();
+
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    res.status(201).json({
+      success: true,
+      message: "Menu item added successfully",
+      data: data[0],
+    });
+
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: err.message,
+    });
+  }
+};
+
 
 
 

@@ -114,7 +114,9 @@ export default function Cart() {
 
           {cart.length > 0 && (
             <div className="flex flex-col items-center">
-              <button onClick={() => navigate("/checkout")}
+              <button onClick={() => {
+                navigate("/checkout")
+              }}
                 className="btn btn-outline btn-primary w-1/2 mt-6">
                 Proceed to Checkout
               </button>

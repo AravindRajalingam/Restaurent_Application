@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-
 import { useNavigate } from "react-router-dom";
-import Navbar from "./Navbar";
+import sampleimg from '../assets/sample.avif'
+import { formatINR } from "./Utils/INR";
 
 export default function Home() {
   const [showSearch, setShowSearch] = useState(false);
@@ -27,9 +27,9 @@ export default function Home() {
   ];
 
   const featuredDishes = [
-    { name: "Grilled Salmon", desc: "Fresh Atlantic salmon grilled to perfection.", price: 25, img: "https://images.unsplash.com/photo-1562967916-eb82221dfb54" },
-    { name: "Pasta Alfredo", desc: "Creamy Alfredo pasta with parmesan.", price: 18, img: "https://images.unsplash.com/photo-1589308078054-6e8bfcf5eab7" },
-    { name: "Margherita Pizza", desc: "Classic pizza with mozzarella and basil.", price: 15, img: "https://images.unsplash.com/photo-1601924638867-3ec5d3c4d1e3" },
+    { name: "Grilled Salmon", desc: "Fresh Atlantic salmon grilled to perfection.", price: formatINR(25), img: sampleimg},
+    { name: "Pasta Alfredo", desc: "Creamy Alfredo pasta with parmesan.", price: formatINR(18), img: sampleimg},
+    { name: "Margherita Pizza", desc: "Classic pizza with mozzarella and basil.", price: formatINR(15), img: sampleimg },
   ];
 
   const testimonials = [
@@ -102,7 +102,7 @@ export default function Home() {
                 <div className="card-body text-center">
                   <h3 className="card-title justify-center text-blue-900">{dish.name}</h3>
                   <p className="text-gray-600">{dish.desc}</p>
-                  <div className="badge badge-outline mt-2 text-yellow-500 border-yellow-500">${dish.price}</div>
+                  <div className="badge badge-outline mt-2 text-yellow-500 border-yellow-500">{dish.price}</div>
                 </div>
               </div>
             ))}

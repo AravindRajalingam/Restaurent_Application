@@ -30,6 +30,8 @@ export default function Checkout() {
                         Order Confirmation
                     </h3>
 
+                    <div className="divider"></div>
+
                     {/* TABLE */}
                     <div className="overflow-x-auto">
                         <table className="table w-full">
@@ -105,9 +107,9 @@ export default function Checkout() {
                         >
                             Back to Cart
                         </button>
-                        
+
                         <button
-                            className="btn btn-primary w-1/2"
+                            className="btn btn-primary w-1/2 btn-outline"
                             onClick={() => startPayment(grandTotal)}
                         >
                             Confirm Order

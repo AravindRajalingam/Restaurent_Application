@@ -50,6 +50,8 @@ export default function Cart() {
             Your Order
           </h3>
 
+          <div className="divider"></div>
+
           {cart.length === 0 ? (
             <div className="flex flex-col justify-center items-center">
               <p className="text-gray-500 text-center py-10">
@@ -80,7 +82,7 @@ export default function Cart() {
                       onClick={() => removeFromCart(item.id)}
                       className="btn btn-sm btn-outline btn-error"
                     >
-                      Remove From Cart
+                      Remove
                     </button>
                     <button
                       onClick={() => decreaseCount(item.id)}

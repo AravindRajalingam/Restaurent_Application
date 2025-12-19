@@ -31,7 +31,7 @@ export default function Checkout() {
 
           {/* TABLE */}
           <div className="overflow-x-auto">
-            <table className="table w-full border">
+            <table className="table w-full">
               <thead className="bg-gray-100">
                 <tr className="text-gray-700">
                   <th>Item</th>

@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import './App.css'
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import Authentication from './components/Authentication.jsx';
@@ -7,6 +6,8 @@ import Home from './components/Home.jsx';
 import MenuItems from './components/MenuItems.jsx';
 import Cart from './components/Cart.jsx';
 import Layout from './components/Layout.jsx';
+import About from './components/About.jsx';
+import Contact from './components/Contact.jsx';
 
 function App() {
 
@@ -18,8 +19,10 @@ function App() {
           <Route element={<Layout />}>
             <Route path="/pay" element={<PaymentButton />} />
             <Route path="/" element={<Home />} />
-            <Route path="/our-menu" element={<MenuItems />} />
+            <Route path="/item-menu" element={<MenuItems />} />
             <Route path="/cart" element={<Cart />} />
+            <Route path="/about-us" element={<About/>} />
+            <Route path="/contact" element={<Contact />} />
           </Route>
 
         </Routes>

@@ -100,7 +100,7 @@ export default function Navbar() {
                 : "opacity-0 scale-95 pointer-events-none"
               }`}
           >
-            {["Home", "Our Menu", "About Us", "Contact"].map((item) => (
+            {["Home", "Item Menu", "About Us", "Contact"].map((item) => (
               <li key={item}>
                 <a
                   href={item === "Home" ? "/" : `${item.toLowerCase().replace(" ", "-")}`}

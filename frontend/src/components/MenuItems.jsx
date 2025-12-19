@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "./Navbar";
 
 export default function MenuPage() {
@@ -16,7 +16,13 @@ export default function MenuPage() {
   ];
 
   const [selectedCategory, setSelectedCategory] = useState("Starters");
-  const [cart, setCart] = useState([]);
+  // const [cart, setCart] = useState([]);
+
+  const [cart, setCart] = useState(() => {
+    const savedCart = localStorage.getItem("cart");
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
+
 
   const addToCart = (item) => {
     setCart((prev) => {
@@ -33,6 +39,28 @@ export default function MenuPage() {
     setCart((prev) => prev.filter((item) => item.id !== id));
   };
 
+  const increaseCount = (id) => {
+    setCart(
+      (prev) => { return prev.map((i) => i.id === id ? { ...i, qty: i.qty + 1 } : i) }
+    )
+  }
+
+  const decreaseCount = (id) => {
+    setCart(prev =>
+      prev
+        .map(i =>
+          i.id === id ? { ...i, qty: i.qty - 1 } : i
+        )
+        .filter(i => i.qty > 0) // auto remove
+    );
+  };
+
+
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(cart));
+  }, [cart]);
+
+
   const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
   return (
@@ -48,9 +76,8 @@ export default function MenuPage() {
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`btn btn-sm rounded-full font-semibold transition-all duration-300 ${
-                selectedCategory === cat ? "btn-warning text-white" : "btn-outline btn-secondary"
-              }`}
+              className={`btn btn-sm rounded-full font-semibold transition-all duration-300 ${selectedCategory === cat ? "btn-warning text-white" : "btn-outline btn-secondary"
+                }`}
             >
               {cat}
             </button>
@@ -63,25 +90,62 @@ export default function MenuPage() {
           <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
             {menuItems
               .filter((item) => item.category === selectedCategory)
-              .map((item) => (
-                <div key={item.id} className="card bg-white shadow-lg hover:shadow-2xl transition-shadow duration-300 rounded-2xl overflow-hidden border border-gray-200">
-                  <figure className="h-48 overflow-hidden">
-                    <img src={item.img} alt={item.name} className="w-full h-full object-cover transition-transform duration-300 hover:scale-105" />
-                  </figure>
-                  <div className="card-body text-center">
-                    <h2 className="card-title justify-center text-lg font-bold text-gray-800">{item.name}</h2>
-                    <p className="text-gray-600 font-semibold">${item.price.toFixed(2)}</p>
-                    <div className="card-actions justify-center mt-2">
-                      <button
-                        onClick={() => addToCart(item)}
-                        className="btn btn-warning btn-sm w-32 hover:bg-yellow-500 hover:text-white"
-                      >
-                        Add to Cart
-                      </button>
+              .map((item) => {
+
+                const cartItem = cart.find(c => c.id === item.id);
+
+                return (
+                  <div key={item.id} className="card bg-white shadow-lg hover:shadow-2xl transition-shadow duration-300 rounded-2xl overflow-hidden border border-gray-200">
+                    <figure className="h-48 overflow-hidden">
+                      <img
+                        src={item.img}
+                        alt={item.name}
+                        className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                      />
+                    </figure>
+
+                    <div className="card-body text-center">
+                      <h2 className="card-title justify-center text-lg font-bold text-gray-800">
+                        {item.name}
+                      </h2>
+
+                      <p className="text-gray-600 font-semibold">
+                        ${item.price.toFixed(2)}
+                      </p>
+
+                      <div className="card-actions justify-center mt-2">
+                        {cartItem ? (
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => decreaseCount(item.id)}
+                              className="btn btn-sm btn-outline btn-error"
+                            >
+                              −
+                            </button>
+
+                            <span className="font-semibold">{cartItem.qty}</span>
+
+                            <button
+                              onClick={() => increaseCount(item.id)}
+                              className="btn btn-sm btn-outline btn-primary"
+                            >
+                              +
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => addToCart(item)}
+                            className="btn btn-warning btn-sm w-32"
+                          >
+                            ADD
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
+
           </div>
 
           {/* Cart */}
@@ -97,12 +161,24 @@ export default function MenuPage() {
                       <p className="font-semibold text-gray-800">{item.name} x {item.qty}</p>
                       <p className="text-gray-500">${(item.price * item.qty).toFixed(2)}</p>
                     </div>
-                    <button
-                      onClick={() => removeFromCart(item.id)}
-                      className="btn btn-xs btn-outline btn-error"
-                    >
-                      Remove
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => decreaseCount(item.id)}
+                        className="btn btn-xs btn-outline btn-error"
+                      >
+                        −
+                      </button>
+
+                      <span className="font-semibold">{item.qty}</span>
+
+                      <button
+                        onClick={() => increaseCount(item.id)}
+                        className="btn btn-xs btn-outline btn-primary"
+                      >
+                        +
+                      </button>
+                    </div>
+
                   </li>
                 ))}
               </ul>

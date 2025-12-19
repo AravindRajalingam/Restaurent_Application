@@ -70,7 +70,7 @@ export default function Home() {
                   <h1 className="text-3xl lg:text-5xl font-extrabold mb-4 text-yellow-400 drop-shadow-lg">{slide.title}</h1>
                   <p className="text-white mb-6 text-lg lg:text-xl drop-shadow-md">{slide.desc}</p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <button className="btn btn-warning px-6 py-3 text-lg hover:scale-105 transition-transform duration-300">View Menu</button>
+                    <button onClick={()=>navigate("/item-menu")} className="btn btn-warning px-6 py-3 text-lg hover:scale-105 transition-transform duration-300">View Menu</button>
                     <button className="btn btn-outline btn-warning px-6 py-3 text-lg hover:scale-105 transition-transform duration-300">Reserve Table</button>
                   </div>
                 </div>
@@ -80,7 +80,7 @@ export default function Home() {
         </div>
 
         {/* About Section */}
-        <section className="py-20 px-4 bg-gradient-to-b from-blue-900 to-blue-800 text-yellow-100">
+        <section className="py-20 px-4 bg-gradient-to-b from-blue-900 to-blue-800 text-yellow-100 my-5 rounded-2xl">
           <div className="max-w-6xl mx-auto text-center">
             <h2 className="text-4xl md:text-5xl font-bold mb-6">About Mu Family Restaurant</h2>
             <p className="text-lg md:text-xl max-w-3xl mx-auto leading-relaxed">
@@ -133,7 +133,7 @@ export default function Home() {
         </section>
 
         {/* Reservation Form */}
-        <section id="reservation" className="py-20 px-4 bg-blue-900 text-yellow-100">
+        <section id="reservation" className="py-20 px-4 bg-blue-900 text-yellow-100 my-5 rounded-2xl">
           <div className="max-w-6xl mx-auto text-center mb-12">
             <h2 className="text-4xl font-bold mb-4">Reserve a Table</h2>
             <p className="max-w-2xl mx-auto mb-8 text-lg">Book your table online and enjoy a delightful experience.</p>

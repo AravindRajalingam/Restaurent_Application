@@ -1,0 +1,109 @@
+import { useState, useEffect } from "react";
+import Navbar from "./Navbar";
+
+export default function Cart() {
+
+  const [cart, setCart] = useState(() => {
+    const savedCart = localStorage.getItem("cart");
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(cart));
+  }, [cart]);
+
+  const increaseCount = (id) => {
+    setCart(cart.map(item =>
+      item.id === id ? { ...item, qty: item.qty + 1 } : item
+    ));
+  };
+
+  const decreaseCount = (id) => {
+    setCart(
+      cart
+        .map(item =>
+          item.id === id ? { ...item, qty: item.qty - 1 } : item
+        )
+        .filter(item => item.qty > 0)
+    );
+  };
+
+  const total = cart.reduce(
+    (sum, item) => sum + item.price * item.qty,
+    0
+  );
+
+  return (
+    <div className="bg-gray-100 min-h-screen">
+      {/* Navbar */}
+      <Navbar />
+
+      {/* Page Container */}
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-4 sm:p-6">
+
+          <h3 className="text-xl sm:text-2xl font-bold mb-4 text-gray-800">
+            Your Order
+          </h3>
+
+          {cart.length === 0 ? (
+            <p className="text-gray-500 text-center py-10">
+              Your cart is empty
+            </p>
+          ) : (
+            <ul className="space-y-4">
+              {cart.map(item => (
+                <li
+                  key={item.id}
+                  className="flex justify-between items-center border-b border-gray-200 pb-3"
+                >
+                  <div>
+                    <p className="font-semibold text-gray-800">
+                      {item.name}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      ${item.price.toFixed(2)}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => decreaseCount(item.id)}
+                      className="btn btn-xs sm:btn-sm btn-outline btn-error"
+                    >
+                      −
+                    </button>
+
+                    <span className="font-semibold w-6 text-center">
+                      {item.qty}
+                    </span>
+
+                    <button
+                      onClick={() => increaseCount(item.id)}
+                      className="btn btn-xs sm:btn-sm btn-outline btn-primary"
+                    >
+                      +
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <div className="divider my-4"></div>
+
+          <div className="flex justify-between text-lg font-bold text-gray-800">
+            <span>Total</span>
+            <span>${total.toFixed(2)}</span>
+          </div>
+
+          {cart.length > 0 && (
+            <button className="btn btn-primary w-full mt-6">
+              Proceed to Checkout
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

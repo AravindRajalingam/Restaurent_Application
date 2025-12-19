@@ -149,7 +149,7 @@ export default function MenuPage() {
           </div>
 
           {/* Cart */}
-          <div className="sticky top-28 bg-white p-6 rounded-2xl shadow-xl h-fit border border-gray-200">
+          {/* <div className="sticky top-28 bg-white p-6 rounded-2xl shadow-xl h-fit border border-gray-200">
             <h3 className="text-xl font-bold mb-4 text-gray-800">Your Order</h3>
             {cart.length === 0 ? (
               <p className="text-gray-500">No items added.</p>
@@ -192,7 +192,7 @@ export default function MenuPage() {
                 Checkout
               </button>
             )}
-          </div>
+          </div> */}
 
         </div>
       </div>

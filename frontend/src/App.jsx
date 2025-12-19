@@ -8,7 +8,12 @@ import Layout from './components/Layout.jsx';
 import About from './components/About.jsx';
 import Contact from './components/Contact.jsx';
 import Checkout from './components/Checkout.jsx';
+<<<<<<< HEAD
 import PaymentSuccess from './components/PaymentSuccess.jsx';
+=======
+import AddCategory from './components/Admin/AddCategory.jsx';
+import AddMenuItem from './components/Admin/AddMenuItem.jsx';
+>>>>>>> 788224eedf0f8f277194c38581c7bc3ccec6f732
 
 function App() {
 
@@ -25,7 +30,12 @@ function App() {
             <Route path="/about-us" element={<About/>} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/checkout" element={<Checkout />} />
+<<<<<<< HEAD
             <Route path="/payment-success" element={<PaymentSuccess/>}/>
+=======
+            <Route path="/add-category" element={<AddCategory />} />
+            <Route path="/add-menu-item" element={<AddMenuItem />} />
+>>>>>>> 788224eedf0f8f277194c38581c7bc3ccec6f732
           </Route>
 
         </Routes>

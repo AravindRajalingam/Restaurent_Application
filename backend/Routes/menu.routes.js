@@ -1,7 +1,12 @@
 import express from 'express'
-import { getMenu } from '../controllers/menu.controller.js'
+import { addCategory, addMenuItem, getMenu } from '../Controllers/menu.controller.js'
+import { getCategories } from '../Controllers/menu.controller.js'
+import { upload } from '../middleware/upload.js'
 
 const router = express.Router()
-router.get('/', getMenu)
+router.get('/get-menu-items', getMenu)
+router.get('/get-categories',getCategories)
+router.post('/add-category',addCategory)
+router.post('/add-menu-item',upload.single("image"),addMenuItem)
 
 export default router

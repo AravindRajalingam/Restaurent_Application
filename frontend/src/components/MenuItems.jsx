@@ -3,7 +3,6 @@ import { formatINR } from "./Utils/INR";
 import sampleimg from '../assets/sample.avif'
 
 export default function MenuPage() {
-  // const categories = ["Starters", "Main Course", "Desserts", "Beverages"];
 
   const API_URL = import.meta.env.VITE_API_URL;
 

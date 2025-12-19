@@ -48,8 +48,6 @@ export const getMenu = async (req, res) => {
 }
 
 
-
-
 export const getCategories = async (req, res) => {
   try {
     const { data, error } = await supabase
@@ -78,7 +76,6 @@ export const getCategories = async (req, res) => {
     })
   }
 }
-
 
 
 export const addCategory = async (req, res) => {
@@ -120,8 +117,6 @@ export const addCategory = async (req, res) => {
     });
   }
 };
-
-
 
 
 export const addMenuItem = async (req, res) => {

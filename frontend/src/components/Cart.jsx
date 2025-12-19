@@ -56,7 +56,7 @@ export default function Cart() {
                 Your cart is empty
               </p>
               <button onClick={() => navigate("/item-menu")} className="btn btn-outline btn-primary w-1/2 mt-5">
-                Buy Now
+                Order Now
               </button>
             </div>
           ) : (

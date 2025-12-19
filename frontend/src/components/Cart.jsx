@@ -31,6 +31,10 @@ export default function Cart() {
     );
   };
 
+  const removeFromCart = (id) => {
+    setCart((prev) => prev.filter((item) => item.id !== id));
+  };
+
   const total = cart.reduce(
     (sum, item) => sum + item.price * item.qty,
     0
@@ -51,7 +55,7 @@ export default function Cart() {
               <p className="text-gray-500 text-center py-10">
                 Your cart is empty
               </p>
-              <button onClick={()=>navigate("/item-menu")} className="btn btn-outline btn-primary w-1/2 mt-5">
+              <button onClick={() => navigate("/item-menu")} className="btn btn-outline btn-primary w-1/2 mt-5">
                 Buy Now
               </button>
             </div>
@@ -72,6 +76,12 @@ export default function Cart() {
                   </div>
 
                   <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => removeFromCart(item.id)}
+                      className="btn btn-sm btn-outline btn-error"
+                    >
+                      Remove From Cart
+                    </button>
                     <button
                       onClick={() => decreaseCount(item.id)}
                       className="btn btn-xs sm:btn-sm btn-outline btn-error"
@@ -104,11 +114,11 @@ export default function Cart() {
 
           {cart.length > 0 && (
             <div className="flex flex-col items-center">
-              <button onClick={()=>navigate("/checkout")}
+              <button onClick={() => navigate("/checkout")}
                 className="btn btn-outline btn-primary w-1/2 mt-6">
                 Proceed to Checkout
               </button>
-              <button onClick={()=>navigate("/item-menu")} className="btn btn-outline btn-primary w-1/2 mt-5">
+              <button onClick={() => navigate("/item-menu")} className="btn btn-outline btn-primary w-1/2 mt-5">
                 Add More
               </button>
             </div>

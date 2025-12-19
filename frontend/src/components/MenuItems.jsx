@@ -39,18 +39,6 @@ export default function MenuPage() {
     setCart((prev) => prev.filter((item) => item.id !== id));
   };
 
-  const increaseCount = (id) => {
-    setCart(prev => prev.map(i => i.id === id ? { ...i, qty: i.qty + 1 } : i));
-  }
-
-  const decreaseCount = (id) => {
-    setCart(prev =>
-      prev
-        .map(i => i.id === id ? { ...i, qty: i.qty - 1 } : i)
-        .filter(i => i.qty > 0)
-    );
-  };
-
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);

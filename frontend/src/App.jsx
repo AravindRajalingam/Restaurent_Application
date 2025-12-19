@@ -1,7 +1,7 @@
 import './App.css'
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import Authentication from './components/Authentication.jsx';
-import PaymentButton from './components/PaymentButton.jsx';
+import PaymentButton from './components/Utils/PaymentButton.jsx';
 import Home from './components/Home.jsx';
 import MenuItems from './components/MenuItems.jsx';
 import Cart from './components/Cart.jsx';

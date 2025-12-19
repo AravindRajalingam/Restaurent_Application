@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import Navbar from "./Navbar";
+import { formatINR } from "./Utils/INR";
 
 export default function MenuPage() {
   const categories = ["Starters", "Main Course", "Desserts", "Beverages"];
@@ -107,7 +107,7 @@ export default function MenuPage() {
                       </h2>
 
                       <p className="text-gray-600 font-semibold">
-                        ${item.price.toFixed(2)}
+                        {formatINR(item.price.toFixed(2))}
                       </p>
 
                       <div className="card-actions justify-center mt-2">

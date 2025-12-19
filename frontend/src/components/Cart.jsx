@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import Navbar from "./Navbar";
+import { formatINR } from "./Utils/INR";
 
 export default function Cart() {
 
@@ -59,7 +59,7 @@ export default function Cart() {
                       {item.name}
                     </p>
                     <p className="text-sm text-gray-500">
-                      ${item.price.toFixed(2)}
+                      {formatINR(item.price.toFixed(2))}
                     </p>
                   </div>
 
@@ -87,17 +87,22 @@ export default function Cart() {
             </ul>
           )}
 
-          <div className="divider my-4"></div>
+          <div className="divider divider-primary my-4"></div>
 
-          <div className="flex justify-between text-lg font-bold text-gray-800">
-            <span>Total</span>
-            <span>${total.toFixed(2)}</span>
+          <div className="flex justify-center gap-5 text-lg font-bold text-gray-800">
+            <span>Total : </span>
+            <span>{formatINR(total.toFixed(2))}</span>
           </div>
 
           {cart.length > 0 && (
-            <button className="btn btn-primary w-full mt-6">
-              Proceed to Checkout
-            </button>
+            <div className="flex flex-col items-center">
+              <button className="btn btn-outline btn-primary w-1/2 mt-6">
+                Proceed to Checkout
+              </button>
+              <button className="btn btn-outline btn-primary w-1/2 mt-5">
+                Add More
+              </button>
+            </div>
           )}
         </div>
       </div>

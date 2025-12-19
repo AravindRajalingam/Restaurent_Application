@@ -3,21 +3,67 @@ import { formatINR } from "./Utils/INR";
 import sampleimg from '../assets/sample.avif'
 
 export default function MenuPage() {
-  const categories = ["Starters", "Main Course", "Desserts", "Beverages"];
+  // const categories = ["Starters", "Main Course", "Desserts", "Beverages"];
 
-  const menuItems = [
-    { id: 1, name: "Chicken Wings", category: "Starters", price: 5.99, img: sampleimg },
-    { id: 2, name: "Paneer Tikka", category: "Starters", price: 4.99, img: sampleimg },
-    { id: 3, name: "Grilled Salmon", category: "Main Course", price: 12.99, img: sampleimg },
-    { id: 4, name: "Veg Biryani", category: "Main Course", price: 9.99, img: sampleimg },
-    { id: 5, name: "Chocolate Lava Cake", category: "Desserts", price: 6.99, img: sampleimg },
-    { id: 6, name: "Ice Cream Sundae", category: "Desserts", price: 4.99, img: sampleimg },
-    { id: 7, name: "Coke", category: "Beverages", price: 1.99, img: sampleimg },
-    { id: 8, name: "Fresh Juice", category: "Beverages", price: 2.99, img: sampleimg },
-    { id: 9, name: "Paneer Tikka", category: "Starters", price: 4.99, img: sampleimg },
-  ];
+  const API_URL = import.meta.env.VITE_API_URL;
 
-  const [selectedCategory, setSelectedCategory] = useState("Starters");
+  const [categories,setCategories] = useState([])
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch(`${API_URL}/menu/get-categories`);
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch categories");
+        }
+        const result = await res.json();
+        setCategories(result.data); // 👈 because backend sends { success, data }
+
+      } catch (err) {
+        alert(err)
+      } 
+    };
+
+    fetchCategories();
+  }, []);
+
+
+  useEffect(() => {
+    const fetchMenuItems = async () => {
+      try {
+        const res = await fetch(`${API_URL}/menu/get-menu-items`);
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch menu items");
+        }
+        const result = await res.json();
+        setMenuItems(result.data); // 👈 because backend sends { success, data }
+
+      } catch (err) {
+        alert(err)
+      } 
+    };
+
+    fetchMenuItems();
+  }, []);
+
+
+  // const menuItems = [
+  //   { id: 1, name: "Chicken Wings", category: "Starters", price: 5.99, img: sampleimg },
+  //   { id: 2, name: "Paneer Tikka", category: "Starters", price: 4.99, img: sampleimg },
+  //   { id: 3, name: "Grilled Salmon", category: "Main Course", price: 12.99, img: sampleimg },
+  //   { id: 4, name: "Veg Biryani", category: "Main Course", price: 9.99, img: sampleimg },
+  //   { id: 5, name: "Chocolate Lava Cake", category: "Desserts", price: 6.99, img: sampleimg },
+  //   { id: 6, name: "Ice Cream Sundae", category: "Desserts", price: 4.99, img: sampleimg },
+  //   { id: 7, name: "Coke", category: "Beverages", price: 1.99, img: sampleimg },
+  //   { id: 8, name: "Fresh Juice", category: "Beverages", price: 2.99, img: sampleimg },
+  //   { id: 9, name: "Paneer Tikka", category: "Starters", price: 4.99, img: sampleimg },
+  // ];
+
+  const [menuItems,setMenuItems] = useState([])
+
+  const [selectedCategory, setSelectedCategory] = useState("Lunch");
 
   const [cart, setCart] = useState(() => {
     const savedCart = localStorage.getItem("cart");
@@ -53,12 +99,12 @@ export default function MenuPage() {
         <div className="flex justify-center gap-4 mb-8 flex-wrap">
           {categories.map((cat) => (
             <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`btn rounded-2xl font-bold transition-all duration-300 ${selectedCategory === cat ? "btn-warning text-white" : "btn-outline btn-secondary"
+              key={cat.id}
+              onClick={() => setSelectedCategory(cat.name)}
+              className={`btn rounded-2xl font-bold transition-all duration-300 ${selectedCategory === cat.name ? "btn-warning text-white" : "btn-outline btn-secondary"
                 }`}
             >
-              {cat}
+              {cat.name}
             </button>
           ))}
         </div>
@@ -75,7 +121,7 @@ export default function MenuPage() {
                   {/* IMAGE - 75% height */}
                   <figure className="h-[65%] overflow-hidden">
                     <img
-                      src={item.img}
+                      src={item.image_url}
                       alt={item.name}
                       className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                     />

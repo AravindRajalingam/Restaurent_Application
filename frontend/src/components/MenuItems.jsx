@@ -109,17 +109,10 @@ export default function MenuPage() {
                       {cartItem ? (
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={() => decreaseCount(item.id)}
+                            onClick={() => removeFromCart(item.id)}
                             className="btn btn-sm btn-outline btn-error"
                           >
-                            −
-                          </button>
-                          <span className="font-semibold">{cartItem.qty}</span>
-                          <button
-                            onClick={() => increaseCount(item.id)}
-                            className="btn btn-sm btn-outline btn-primary"
-                          >
-                            +
+                            Remove From Cart
                           </button>
                         </div>
                       ) : (

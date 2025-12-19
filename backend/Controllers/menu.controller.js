@@ -81,4 +81,47 @@ export const getCategories = async (req, res) => {
 
 
 
+export const addCategory = async (req, res) => {
+  try {
+    const { name } = req.body;
+
+    // Validation
+    if (!name || !name.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Category name is required",
+      });
+    }
+
+    // Insert into DB
+    const { data, error } = await supabase
+      .from("categories")
+      .insert([{ name: name.trim() }])
+      .select();
+
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    res.status(201).json({
+      success: true,
+      message: "Category added successfully",
+      data: data[0],
+    });
+
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: err.message,
+    });
+  }
+};
+
+
+
+
 

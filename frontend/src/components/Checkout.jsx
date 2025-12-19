@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { formatINR } from "./Utils/INR";
 import { useNavigate } from "react-router-dom";
 import { startPayment } from "./Utils/Payment";
@@ -8,7 +8,38 @@ export default function Checkout() {
         const savedCart = localStorage.getItem("cart");
         return savedCart ? JSON.parse(savedCart) : [];
     });
-
+    const [user, setUser] = useState(null);
+    const API_URL = import.meta.env.VITE_API_URL;
+   useEffect(() => {
+       const token = localStorage.getItem("access_token");
+   
+       if (!token) {
+         setUser(null);
+         return;
+       }
+   
+       const fetchUser = async () => {
+         try {
+           const res = await fetch(`${API_URL}/auth/me`, {
+             headers: {
+               Authorization: `Bearer ${token}`, // ✅ FIXED
+             },
+           });
+   
+           if (!res.ok) {
+             throw new Error("Unauthorized");
+           }
+   
+           const data = await res.json();
+           setUser(data.user);
+         } catch (err) {
+           localStorage.removeItem("access_token");
+           setUser(null);
+         }
+       };
+   
+       fetchUser();
+     }, []);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false); // For payment selection modal
@@ -23,7 +54,7 @@ export default function Checkout() {
 
     if (method === "online") {
       setLoading(true);
-      startPayment(amount,navigate,setLoading);
+      startPayment(amount,navigate,setLoading,user);
     } else if (method === "cod") {
       // Cash on delivery
       localStorage.removeItem("cart");

@@ -1,4 +1,4 @@
-export async function startPayment(amount, navigate, setLoading) {
+export async function startPayment(amount, navigate, setLoading,user) {
   const API_URL = import.meta.env.VITE_API_URL;
   setLoading(true); // 🔹 move here
 
@@ -33,7 +33,10 @@ export async function startPayment(amount, navigate, setLoading) {
       name: "Restaurant App",
       description: "Food Order Payment",
       order_id: razorpayOrder.id,
-
+      prefill: {
+        name: user ? user.name : "",
+        email: user ? user.email : ""
+      },
       handler: async function (response) {
         try {
           const verifyRes = await fetch(`${API_URL}/payments/verify-payment`, {

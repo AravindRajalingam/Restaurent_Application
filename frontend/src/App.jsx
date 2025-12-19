@@ -6,6 +6,7 @@ import PaymentButton from './components/PaymentButton.jsx';
 import Home from './components/Home.jsx';
 import MenuItems from './components/MenuItems.jsx';
 import Cart from './components/Cart.jsx';
+import Layout from './components/Layout.jsx';
 
 function App() {
 
@@ -13,11 +14,14 @@ function App() {
     <div>
       <BrowserRouter>
         <Routes>
-          <Route path="/auth" element={<Authentication />} />  
-          <Route path="/pay" element={<PaymentButton />} />
-          <Route path="/" element={<Home />} />    
-          <Route path="/our-menu" element={<MenuItems/>}/>
-          <Route path="/cart" element={<Cart/>} />      
+          <Route path="/auth" element={<Authentication />} />
+          <Route element={<Layout />}>
+            <Route path="/pay" element={<PaymentButton />} />
+            <Route path="/" element={<Home />} />
+            <Route path="/our-menu" element={<MenuItems />} />
+            <Route path="/cart" element={<Cart />} />
+          </Route>
+
         </Routes>
       </BrowserRouter>
     </div>

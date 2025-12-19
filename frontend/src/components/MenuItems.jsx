@@ -65,9 +65,6 @@ export default function MenuPage() {
 
   return (
     <div className="bg-gray-100 min-h-screen">
-      {/* Navbar */}
-      <Navbar />
-
       <div className="max-w-6xl mx-auto px-4 py-10">
 
         {/* Category Tabs */}

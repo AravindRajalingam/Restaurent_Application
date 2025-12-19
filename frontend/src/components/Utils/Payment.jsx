@@ -1,4 +1,4 @@
-export async function startPayment(amount, navigate, setLoading,user) {
+export async function startPayment(cart, navigate, setLoading) {
   const API_URL = import.meta.env.VITE_API_URL;
   setLoading(true); // 🔹 move here
 
@@ -12,7 +12,7 @@ export async function startPayment(amount, navigate, setLoading,user) {
         "Content-Type": "application/json",
         Authorization: `Bearer ${access_token}`,
       },
-      body: JSON.stringify({ amount }),
+      body: JSON.stringify({ cartItems: cart }),
     });
 
     const data = await createOrderRes.json();
@@ -23,7 +23,8 @@ export async function startPayment(amount, navigate, setLoading,user) {
       return;
     }
 
-    const { razorpayOrder, orderId } = data;
+    const { razorpayOrder, orderId, bill } = data;
+    const amount = bill.grandTotal;
 
     // 2️⃣ Razorpay options
     const options = {
@@ -33,10 +34,6 @@ export async function startPayment(amount, navigate, setLoading,user) {
       name: "Restaurant App",
       description: "Food Order Payment",
       order_id: razorpayOrder.id,
-      prefill: {
-        name: user ? user.name : "",
-        email: user ? user.email : ""
-      },
       handler: async function (response) {
         try {
           const verifyRes = await fetch(`${API_URL}/payments/verify-payment`, {

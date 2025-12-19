@@ -1,7 +1,9 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
-export default function PaymentSuccess({ orderNumber, amount }) {
+export default function PaymentSuccess() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { orderNumber, amount } = location.state || {};
 
   return (
     <div className="min-h-screen bg-base-200 flex items-center justify-center p-4">
@@ -15,11 +17,7 @@ export default function PaymentSuccess({ orderNumber, amount }) {
             strokeWidth="2"
             viewBox="0 0 24 24"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M5 13l4 4L19 7"
-            />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </div>
 
@@ -32,20 +30,14 @@ export default function PaymentSuccess({ orderNumber, amount }) {
         </p>
 
         <p className="text-gray-700 mb-6">
-          Total Amount Paid: <span className="font-bold text-gray-900">{amount}</span>
+          Total Amount Paid: <span className="font-bold text-gray-900">{amount ? (amount) : "N/A"}</span>
         </p>
 
         <div className="flex flex-col gap-3">
-          <button
-            className="btn btn-primary"
-            onClick={() => navigate("/")}
-          >
+          <button className="btn btn-primary" onClick={() => navigate("/")}>
             Go to Home
           </button>
-          <button
-            className="btn btn-outline btn-secondary"
-            onClick={() => navigate("/my-orders")}
-          >
+          <button className="btn btn-outline btn-secondary" onClick={() => navigate("/my-orders")}>
             View My Orders
           </button>
         </div>

@@ -4,42 +4,63 @@ import { useNavigate } from "react-router-dom";
 import { startPayment } from "./Utils/Payment";
 
 export default function Checkout() {
-    const [cart] = useState(() => {
-        const savedCart = localStorage.getItem("cart");
-        return savedCart ? JSON.parse(savedCart) : [];
-    });
-    const [user, setUser] = useState(null);
-    const API_URL = import.meta.env.VITE_API_URL;
-   useEffect(() => {
-       const token = localStorage.getItem("access_token");
-   
-       if (!token) {
-         setUser(null);
-         return;
-       }
-   
-       const fetchUser = async () => {
-         try {
-           const res = await fetch(`${API_URL}/auth/me`, {
-             headers: {
-               Authorization: `Bearer ${token}`, // ✅ FIXED
-             },
-           });
-   
-           if (!res.ok) {
-             throw new Error("Unauthorized");
-           }
-   
-           const data = await res.json();
-           setUser(data.user);
-         } catch (err) {
-           localStorage.removeItem("access_token");
-           setUser(null);
-         }
-       };
-   
-       fetchUser();
-     }, []);
+
+
+
+  const [cart, setCart] = useState([]);
+
+  useEffect(() => {
+    async function fetchCart() {
+      const token = localStorage.getItem("access_token");
+
+      const res = await fetch(`${API_URL}/cart/get-cart`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await res.json();
+      if (result.success) {
+        setCart(result.data);
+      }
+    }
+
+    fetchCart();
+  }, []);
+
+
+  const [user, setUser] = useState(null);
+  const API_URL = import.meta.env.VITE_API_URL;
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+
+    if (!token) {
+      setUser(null);
+      return;
+    }
+
+    const fetchUser = async () => {
+      try {
+        const res = await fetch(`${API_URL}/auth/me`, {
+          headers: {
+            Authorization: `Bearer ${token}`, // ✅ FIXED
+          },
+        });
+
+        if (!res.ok) {
+          throw new Error("Unauthorized");
+        }
+
+        const data = await res.json();
+        setUser(data.user);
+      } catch (err) {
+        localStorage.removeItem("access_token");
+        setUser(null);
+      }
+    };
+
+    fetchUser();
+  }, []);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false); // For payment selection modal
@@ -54,7 +75,7 @@ export default function Checkout() {
 
     if (method === "online") {
       setLoading(true);
-      startPayment(amount,navigate,setLoading,user);
+      startPayment(cart, navigate, setLoading);
     } else if (method === "cod") {
       // Cash on delivery
       localStorage.removeItem("cart");

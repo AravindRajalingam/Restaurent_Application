@@ -29,38 +29,40 @@ export default function Checkout() {
   }, []);
 
 
-  const [user, setUser] = useState(null);
   const API_URL = import.meta.env.VITE_API_URL;
-  useEffect(() => {
-    const token = localStorage.getItem("access_token");
 
-    if (!token) {
-      setUser(null);
-      return;
-    }
+  // const [user, setUser] = useState(null);
+  // useEffect(() => {
+  //   const token = localStorage.getItem("access_token");
 
-    const fetchUser = async () => {
-      try {
-        const res = await fetch(`${API_URL}/auth/me`, {
-          headers: {
-            Authorization: `Bearer ${token}`, // ✅ FIXED
-          },
-        });
+  //   if (!token) {
+  //     setUser(null);
+  //     return;
+  //   }
 
-        if (!res.ok) {
-          throw new Error("Unauthorized");
-        }
+  //   const fetchUser = async () => {
+  //     try {
+  //       const res = await fetch(`${API_URL}/auth/me`, {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`, // ✅ FIXED
+  //         },
+  //       });
 
-        const data = await res.json();
-        setUser(data.user);
-      } catch (err) {
-        localStorage.removeItem("access_token");
-        setUser(null);
-      }
-    };
+  //       if (!res.ok) {
+  //         throw new Error("Unauthorized");
+  //       }
 
-    fetchUser();
-  }, []);
+  //       const data = await res.json();
+  //       setUser(data.user);
+  //     } catch (err) {
+  //       localStorage.removeItem("access_token");
+  //       setUser(null);
+  //     }
+  //   };
+
+  //   fetchUser();
+  // }, []);
+
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false); // For payment selection modal
@@ -75,15 +77,51 @@ export default function Checkout() {
 
     if (method === "online") {
       setLoading(true);
-      startPayment(cart, navigate, setLoading);
+      startPayment(navigate, setLoading);
     } else if (method === "cod") {
       // Cash on delivery
-      localStorage.removeItem("cart");
-      navigate("/payment-success", {
-        state: { orderNumber: Date.now(), amount: formatINR(amount.toFixed(2)) },
-      });
+      handleCod()
     }
   };
+
+
+  async function handleCod() {
+    try {
+      const access_token = localStorage.getItem("access_token");
+
+      const Res = await fetch(`${API_URL}/payments/cod`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${access_token}`,
+        }
+      });
+
+      const data =await Res.json()
+
+      console.log(data);
+      
+
+      if (!data.success) {
+        alert("Failed to create order");
+        setLoading(false); // 🔹 reset on failure
+        return;
+      }
+
+      const { orderId, bill } = data;
+      const amount = bill.grandTotal;
+
+      navigate("/payment-success", {
+        state: { orderNumber: orderId, amount: amount.toFixed(2), mode:"cod" },
+      });
+
+    } catch (err) {
+      console.error(err);
+      alert("Verification error");
+    } finally {
+      setLoading(false); // ✅ stop loading after success or verification fail
+    }
+  }
 
   return (
     <div className="min-h-screen bg-base-200 flex items-center justify-center p-4">

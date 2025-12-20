@@ -65,6 +65,7 @@ export default function MyOrders() {
               <th>Total Amount</th>
               <th>GST</th>
               <th>Grand Total</th>
+              <th>Mode</th>
               <th>Payment Status</th>
               <th>Order Status</th>
               <th>Placed On</th>
@@ -77,13 +78,27 @@ export default function MyOrders() {
                 <td>{formatINR(order.total_amount.toFixed(2))}</td>
                 <td>{order.gst_amount ? formatINR(order.gst_amount.toFixed(2)) : "-"}</td>
                 <td>{order.grand_total ? formatINR(order.grand_total.toFixed(2)) : "-"}</td>
+                <td>{order.mode === "cod" ? (
+                  <span className="badge badge-warning">Cash on Delivery</span>
+                ) :
+                  (
+                    <span className="badge badge-warning">Online</span>
+                  )}</td>
                 <td>
-                  {order.payment_status === "Pending" ? (
-                    <span className="badge badge-warning">Pending</span>
-                  ) : (
-                    <span className="badge badge-success">Paid</span>
-                  )}
+                  <span
+                    className={`badge ${order.payment_status === "Paid"
+                        ? "badge-success"
+                        : order.payment_status === "Pending"
+                          ? "badge-warning"
+                          : order.payment_status === "Failed"
+                            ? "badge-error"
+                            : "badge-ghost"
+                      }`}
+                  >
+                    {order.payment_status}
+                  </span>
                 </td>
+
                 <td>
                   {order.order_status === "Placed" ? (
                     <span className="badge badge-info">Placed</span>

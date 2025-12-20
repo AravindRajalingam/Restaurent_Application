@@ -1,4 +1,4 @@
-export async function startPayment(cart, navigate, setLoading) {
+export async function startPayment(navigate, setLoading) {
   const API_URL = import.meta.env.VITE_API_URL;
   setLoading(true); // 🔹 move here
 
@@ -11,8 +11,7 @@ export async function startPayment(cart, navigate, setLoading) {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${access_token}`,
-      },
-      body: JSON.stringify({ cartItems: cart }),
+      }
     });
 
     const data = await createOrderRes.json();
@@ -53,10 +52,8 @@ export async function startPayment(cart, navigate, setLoading) {
           const verifyData = await verifyRes.json();
 
           if (verifyData.success) {
-            localStorage.removeItem("cart");
-
             navigate("/payment-success", {
-              state: { orderNumber: orderId, amount: amount.toFixed(2) },
+              state: { orderNumber: orderId, amount: amount.toFixed(2), mode: "online" },
             });
           } else {
             alert("Payment verification failed!");
@@ -70,9 +67,24 @@ export async function startPayment(cart, navigate, setLoading) {
       },
 
       modal: {
-        ondismiss: function () {
-          console.log("Payment cancelled"); // debug
-          setLoading(false); // ✅ stop loading if user cancels
+        ondismiss: async function () {
+          const access_token = localStorage.getItem("access_token");
+
+          try {
+            await fetch(`${API_URL}/payments/update-failed`, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${access_token}`,
+              },
+              body: JSON.stringify({ orderId }),
+            });
+          } catch (err) {
+            console.error("Failed to update payment status:", err);
+          }
+          finally {
+            setLoading(false); // ✅ stop loading if user cancels
+          }
         },
       },
 

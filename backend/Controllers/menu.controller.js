@@ -146,17 +146,6 @@ export const searchItem = async (req, res) => {
       });
     }
 
-    const { data, error } = await supabase
-      .from("menu_items")
-      .select("id, name")
-      .ilike("name", `${item}%`); // 🔍 SEARCH
-    if (!item || item.trim().length < 2) {
-      return res.status(200).json({
-        success: true,
-        data: [],
-      });
-    }
-
     // 🔹 Split input into words
     const keywords = item
       .toLowerCase()
@@ -195,27 +184,21 @@ export const searchItem = async (req, res) => {
 
     res.status(200).json({
       success: true,
-<<<<<<< ours
       count: data.length,
       data
-=======
       data: filteredData.map(menu => ({
         id: menu.id,
         name: menu.name,
         category: menu.categories?.name || "",
         tags: menu.tags || [],
       })),
->>>>>>> theirs
     });
 
   } catch (err) {
     res.status(500).json({
       success: false,
       message: "Server error",
-<<<<<<< ours
       error: err.message
-=======
->>>>>>> theirs
     });
   }
 };

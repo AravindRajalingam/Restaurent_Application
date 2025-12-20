@@ -185,7 +185,7 @@ export const searchItem = async (req, res) => {
     res.status(200).json({
       success: true,
       count: data.length,
-      data
+      data,
       data: filteredData.map(menu => ({
         id: menu.id,
         name: menu.name,

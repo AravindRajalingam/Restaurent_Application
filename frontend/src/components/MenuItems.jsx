@@ -87,6 +87,7 @@ export default function MenuPage() {
 
 
   const [cart, setCart] = useState([]);
+  const [loading,setLoading] = useState(null);
 
   useEffect(() => {
     async function fetchCart() {
@@ -111,8 +112,9 @@ export default function MenuPage() {
 
   const addToCart = async (item) => {
     const token = localStorage.getItem("access_token");
-
-    await fetch(`${API_URL}/cart/add-to-cart`, {
+    setLoading(item.id);
+    try{
+      await fetch(`${API_URL}/cart/add-to-cart`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -130,14 +132,19 @@ export default function MenuPage() {
     });
     const result = await res.json();
     setCart(result.data);
+    } finally{
+      setLoading(null);
+    }
+    
   };
 
 
 
   const removeFromCart = async (id) => {
     const token = localStorage.getItem("access_token");
-
-    await fetch(`${API_URL}/cart/remove-from-cart/${id}`, {
+    setLoading(id);
+    try{
+      await fetch(`${API_URL}/cart/remove-from-cart/${id}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -145,6 +152,10 @@ export default function MenuPage() {
     });
 
     setCart((prev) => prev.filter((item) => item.id !== id));
+    }
+    finally{
+      setLoading(null);
+    }
   };
 
 
@@ -214,15 +225,18 @@ export default function MenuPage() {
                         <button
                           onClick={() => removeFromCart(item.id)}
                           className="btn btn-outline btn-error btn-sm w-full"
+                          disabled={loading===item.id}
                         >
-                          Remove From Cart
+                          {loading===item.id ? <span className="loading loading-spinner loading-xs text-black"></span> : " REMOVE FROM CART"}
                         </button>
                       ) : (
                         <button
                           onClick={() => addToCart(item)}
                           className="btn btn-warning btn-sm w-full"
+                          disabled={loading===item.id}
                         >
-                          ADD TO CART
+                         {loading===item.id ? <span className="loading loading-spinner loading-xs text-black"></span> : " ADD TO CART"}
+                         
                         </button>
                       )}
                     </div>

@@ -10,6 +10,7 @@ import Contact from './components/Contact.jsx';
 import Checkout from './components/Checkout.jsx';
 import PaymentSuccess from './components/PaymentSuccess.jsx';
 import Myorders from './components/MyOrders.jsx';
+import AddMenuItem from './components/Admin/AddMenuItem.jsx';
 
 function App() {
 
@@ -28,6 +29,8 @@ function App() {
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/payment-success" element={<PaymentSuccess/>}/>
             <Route path="/my-orders" element={<Myorders/>}/>
+                        <Route path="/add" element={<AddMenuItem/>}/>
+
           </Route>
 
         </Routes>

@@ -148,13 +148,6 @@ export default function MenuPage() {
   };
 
 
-
-
-
-  useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cart));
-  }, [cart]);
-
   const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
   return (
@@ -182,43 +175,52 @@ export default function MenuPage() {
             .map(item => {
               const cartItem = cart.find(c => c.id === item.id);
               return (
-                <div key={item.id} className="card bg-white shadow-lg hover:shadow-2xl hover:scale-105 transition-transform duration-300 rounded-2xl overflow-hidden border border-gray-200 h-[400px] flex flex-col">
-
-                  {/* IMAGE - 75% height */}
-                  <figure className="h-[65%] overflow-hidden">
+                <div
+                  key={item.id}
+                  className="bg-white rounded-2xl border border-gray-200 shadow-md 
+               hover:shadow-xl hover:-translate-y-1 transition-all duration-300 
+               h-[400px] flex flex-col overflow-hidden"
+                >
+                  {/* IMAGE */}
+                  <figure className="h-[60%] overflow-hidden">
                     <img
                       src={item.image_url}
                       alt={item.name}
-                      className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                      className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
                     />
                   </figure>
 
-                  {/* BODY - remaining 25% */}
-                  <div className="card-body text-center h-[25%] flex flex-col justify-between">
-                    <div>
-                      <h2 className="card-title justify-center text-lg font-bold text-gray-800">
+                  {/* BODY */}
+                  <div className="h-[40%] flex flex-col justify-between p-4 text-center">
+
+                    {/* Name + Description + Price */}
+                    <div className="space-y-1">
+                      <h2 className="text-lg font-bold text-gray-800">
                         {item.name}
                       </h2>
 
-                      <p className="text-gray-600 font-semibold">
+                      <p className="text-sm text-gray-500 italic line-clamp-2">
+                        {item.description}
+                      </p>
+
+                      <p className="text-lg font-semibold text-primary mt-1">
                         {formatINR(item.price.toFixed(2))}
                       </p>
                     </div>
 
-                    <div className="card-actions justify-center mt-2">
+                    {/* ACTIONS */}
+                    <div className="flex justify-center mt-3">
                       {cartItem ? (
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => removeFromCart(item.id)}
-                            className="btn btn-sm btn-outline btn-error"
-                          >
-                            Remove From Cart
-                          </button>
-                        </div>
+                        <button
+                          onClick={() => removeFromCart(item.id)}
+                          className="btn btn-outline btn-error btn-sm w-full"
+                        >
+                          Remove From Cart
+                        </button>
                       ) : (
                         <button
                           onClick={() => addToCart(item)}
-                          className="btn btn-warning btn-sm w-32"
+                          className="btn btn-warning btn-sm w-full"
                         >
                           ADD TO CART
                         </button>
@@ -226,8 +228,8 @@ export default function MenuPage() {
                     </div>
                   </div>
                 </div>
-
               );
+
             })}
         </div>
       </div>

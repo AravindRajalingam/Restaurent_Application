@@ -6,69 +6,84 @@ export default function Navbar() {
   const [showSearch, setShowSearch] = useState(false);
   const [mobileSearch, setMobileSearch] = useState(false);
   const [openMenu, setOpenMenu] = useState(null);
+
+  const [search, setSearch] = useState("");
+  const [items, setItems] = useState([]);
+  const [showResults, setShowResults] = useState(false);
+
   const navRef = useRef(null);
+  const searchRef = useRef(null);
+
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
   const API_URL = import.meta.env.VITE_API_URL;
 
+  const [user, setUser] = useState(null);
 
-  // Close menus on outside click
+  /* ---------------- CLOSE MENU / SEARCH OUTSIDE ---------------- */
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (navRef.current && !navRef.current.contains(e.target)) {
+      if (
+        navRef.current &&
+        !navRef.current.contains(e.target)
+      ) {
         setOpenMenu(null);
+        setShowResults(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-
-
-
+  /* ---------------- FETCH USER ---------------- */
   useEffect(() => {
     const token = localStorage.getItem("access_token");
+    if (!token) return;
 
-    if (!token) {
-      setUser(null);
+    fetch(`${API_URL}/auth/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.ok && res.json())
+      .then((data) => setUser(data?.user))
+      .catch(() => {
+        localStorage.removeItem("access_token");
+        setUser(null);
+      });
+  }, []);
+
+  /* ---------------- SEARCH (DEBOUNCE) ---------------- */
+  useEffect(() => {
+    if (!search.trim()) {
+      setItems([]);
+      setShowResults(false);
       return;
     }
 
-    const fetchUser = async () => {
+    const timer = setTimeout(async () => {
       try {
-        const res = await fetch(`${API_URL}/auth/me`, {
-          headers: {
-            Authorization: `Bearer ${token}`, // ✅ FIXED
-          },
-        });
-
-        if (!res.ok) {
-          throw new Error("Unauthorized");
-        }
-
+        const res = await fetch(
+          `${API_URL}/menu/search-item/${search}`
+        );
         const data = await res.json();
-        setUser(data.user);
-      } catch (err) {
-        localStorage.removeItem("access_token");
-        setUser(null);
+        setItems(data.data || []);
+        setShowResults(true);
+      } catch {
+        setItems([]);
       }
-    };
+    }, 300);
 
-    fetchUser();
-  }, []);
-
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const handleLogout = () => {
-    localStorage.removeItem("access_token"); // better than clear()
+    localStorage.removeItem("access_token");
     setUser(null);
     setOpenMenu(null);
   };
 
-
-
   return (
     <>
-      {/* NAVBAR */}
+      {/* ================= NAVBAR ================= */}
       <div
         ref={navRef}
         className="navbar sticky top-0 z-50
@@ -83,7 +98,6 @@ export default function Navbar() {
               onClick={() => setOpenMenu(openMenu === "menu" ? null : "menu")}
               className="btn btn-ghost btn-circle text-amber-400"
             >
-              {/* MENU SVG */}
               <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2"
                 viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round"
@@ -91,35 +105,30 @@ export default function Navbar() {
               </svg>
             </button>
 
-            {/* MENU DROPDOWN */}
-            <ul
-              className={`absolute left-0 mt-3
+            {openMenu === "menu" && (
+              <ul className="absolute left-0 mt-3
               w-screen sm:w-56
               bg-[#020617]/95 backdrop-blur-md
               rounded-none sm:rounded-xl
-              shadow-2xl p-3 transition-all
-              ${openMenu === "menu"
-                  ? "opacity-100 scale-100"
-                  : "opacity-0 scale-95 pointer-events-none"
-                }`}
-            >
-              {["Home", "Item Menu","My Orders", "About Us", "Contact"].map((item) => (
-                <li key={item}>
-                  <a
-                    href={item === "Home" ? "/" : `/${item.toLowerCase().replace(" ", "-")}`}
-                    className="block px-4 py-3 rounded-lg
-                    text-gray-200 font-medium
-                    hover:bg-amber-400/10 hover:text-amber-400"
-                  >
-                    {item}
-                  </a>
-                </li>
-              ))}
-            </ul>
+              shadow-2xl p-3">
+                {["Home", "Item Menu", "My Orders", "About Us", "Contact"].map((item) => (
+                  <li key={item}>
+                    <a
+                      href={item === "Home" ? "/" : `/${item.toLowerCase().replace(" ", "-")}`}
+                      className="block px-4 py-3 rounded-lg
+                      text-gray-200 font-medium
+                      hover:bg-amber-400/10 hover:text-amber-400"
+                    >
+                      {item}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
 
-        {/* CENTER (VISIBLE ON MOBILE TOO) */}
+        {/* CENTER */}
         <div className="navbar-center flex gap-3">
           <img src={logo} className="w-10 h-10 sm:w-14 sm:h-14 rounded-full" />
           <div className="text-center leading-tight">
@@ -136,19 +145,51 @@ export default function Navbar() {
         <div className="navbar-end flex items-center gap-1 sm:gap-3">
 
           {/* DESKTOP SEARCH */}
-          <div className={`hidden sm:block transition-all duration-300
-            ${showSearch ? "w-52 opacity-100" : "w-0 opacity-0 overflow-hidden"}`}>
+          <div
+            ref={searchRef}
+            className={`relative hidden sm:block transition-all duration-300
+            ${showSearch ? "w-52 opacity-100" : "w-0 opacity-0 overflow-hidden"}`}
+          >
             <input
               type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
               placeholder="Search dishes..."
               className="input input-sm w-full rounded-full
               bg-black/70 text-white
               border border-amber-400
               placeholder:text-gray-400"
             />
+
+            {/* SEARCH RESULTS */}
+            {showResults && (
+              <ul className="menu bg-base-100 rounded-box mt-2
+              shadow-lg absolute w-full z-50">
+                {items.length ? (
+                  items.map((item) => (
+                    <li key={item.id}>
+                      <button
+                        onClick={() => {
+                          navigate(`/item/${item.id}`);
+                          setSearch("");
+                          setItems([]);
+                          setShowSearch(false);
+                        }}
+                      >
+                        {item.name}
+                      </button>
+                    </li>
+                  ))
+                ) : (
+                  <li className="px-4 py-2 text-sm text-gray-500">
+                    No items found
+                  </li>
+                )}
+              </ul>
+            )}
           </div>
 
-          {/* SEARCH BUTTON */}
+          {/* SEARCH ICON (UNCHANGED) */}
           <button
             onClick={() => {
               if (window.innerWidth < 640) {
@@ -159,7 +200,6 @@ export default function Navbar() {
             }}
             className="btn btn-ghost btn-circle text-amber-400"
           >
-            {/* SEARCH SVG */}
             <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2"
               viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round"
@@ -167,7 +207,7 @@ export default function Navbar() {
             </svg>
           </button>
 
-          {/* CART */}
+          {/* CART ICON (UNCHANGED) */}
           <button
             onClick={() => navigate("/cart")}
             className="btn btn-ghost btn-circle text-amber-400"
@@ -183,7 +223,7 @@ export default function Navbar() {
             </svg>
           </button>
 
-          {/* PROFILE */}
+          {/* PROFILE ICON (UNCHANGED) */}
           <div className="relative">
             <button
               onClick={() => setOpenMenu(openMenu === "profile" ? null : "profile")}
@@ -198,59 +238,89 @@ export default function Navbar() {
               </svg>
             </button>
 
-            <div
-              className={`absolute right-0 mt-3 w-64
+            {openMenu === "profile" && (
+              <div className="absolute right-0 mt-3 w-64
               bg-[#020617]/95 backdrop-blur-md
-              rounded-xl shadow-2xl p-4 transition-all
-              ${openMenu === "profile"
-                  ? "opacity-100 scale-100"
-                  : "opacity-0 scale-95 pointer-events-none"
-                }`}
-            >
-              {!user ? (
-                <button
-                  onClick={() => navigate("/auth")}
-                  className="w-full py-2 bg-amber-400
-                  text-black font-semibold rounded-lg"
-                >
-                  Login
-                </button>
-              ) : (
-                <>
-                  <p className="text-white font-semibold">{user.name}</p>
-                  <p className="text-sm text-gray-400 mb-3">{user.email}</p>
-                  <button onClick={handleLogout}
-                    className="w-full text-left px-3 py-2
-                    text-red-400 hover:bg-red-400/10 rounded-lg">
-                    Logout
+              rounded-xl shadow-2xl p-4">
+                {!user ? (
+                  <button
+                    onClick={() => navigate("/auth")}
+                    className="w-full py-2 bg-amber-400
+                    text-black font-semibold rounded-lg"
+                  >
+                    Login
                   </button>
-                </>
-              )}
-            </div>
+                ) : (
+                  <>
+                    <p className="text-white font-semibold">{user.name}</p>
+                    <p className="text-sm text-gray-400 mb-3">{user.email}</p>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-3 py-2
+                      text-red-400 hover:bg-red-400/10 rounded-lg"
+                    >
+                      Logout
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* MOBILE SEARCH OVERLAY */}
+      {/* ================= MOBILE SEARCH ================= */}
       {mobileSearch && (
         <div className="fixed inset-0 z-[60]
-        bg-base backdrop-blur-md p-4">
-          <div className="flex items-center gap-3">
-            <input
-              autoFocus
-              type="text"
-              placeholder="Search dishes..."
-              className="input input-lg w-full rounded-xl
-              bg-black/70 text-white
-              border border-amber-400
-              placeholder:text-gray-400"
-            />
-            <button
-              onClick={() => setMobileSearch(false)}
-              className="btn btn-ghost text-amber-400 text-xl"
-            >
-              ✕
-            </button>
+        bg-black/60 backdrop-blur-md p-4">
+          <div ref={searchRef}>
+            <div className="flex items-center gap-3">
+              <input
+                autoFocus
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                type="text"
+                placeholder="Search dishes..."
+                className="input input-lg w-full rounded-xl
+                bg-black/70 text-white
+                border border-amber-400
+                placeholder:text-gray-400"
+              />
+              <button
+                onClick={() => {
+                  setMobileSearch(false);
+                  setSearch("");
+                  setItems([]);
+                }}
+                className="btn btn-ghost text-amber-400 text-xl"
+              >
+                ✕
+              </button>
+            </div>
+
+            {showResults && (
+              <ul className="menu bg-base-100 rounded-box mt-4 shadow-xl">
+                {items.length ? (
+                  items.map((item) => (
+                    <li key={item.id}>
+                      <button
+                        onClick={() => {
+                          navigate(`/item/${item.id}`);
+                          setMobileSearch(false);
+                          setSearch("");
+                        }}
+                      >
+                        {item.name}
+                      </button>
+                    </li>
+                  ))
+                ) : (
+                  <li className="px-4 py-2 text-sm text-gray-500">
+                    No items found
+                  </li>
+                )}
+              </ul>
+            )}
           </div>
         </div>
       )}

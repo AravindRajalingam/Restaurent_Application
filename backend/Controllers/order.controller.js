@@ -3,58 +3,58 @@ import { supabase } from '../Config/supabaseClient.js'
 /**
  * PLACE ORDER - CASH ON DELIVERY
  */
-export const placeOrder = async (req, res) => {
-  const { items, total, gst, grandTotal } = req.body
+// export const placeOrder = async (req, res) => {
+//   const { items, total, gst, grandTotal } = req.body
 
-  if (!items || items.length === 0) {
-    return res.status(400).json({ message: 'Cart is empty' })
-  }
+//   if (!items || items.length === 0) {
+//     return res.status(400).json({ message: 'Cart is empty' })
+//   }
 
-  // 1️⃣ Create order (COD)
-  const { data: order, error } = await supabase
-    .from('orders')
-    .insert({
-      user_id: req.user.id,
-      total_amount: total,
-      gst_amount: gst,
-      grand_total: grandTotal,
-      payment_status: 'COD',
-      order_status: 'Placed'
-    })
-    .select()
-    .single()
+//   // 1️⃣ Create order (COD)
+//   const { data: order, error } = await supabase
+//     .from('orders')
+//     .insert({
+//       user_id: req.user.id,
+//       total_amount: total,
+//       gst_amount: gst,
+//       grand_total: grandTotal,
+//       payment_status: 'COD',
+//       order_status: 'Placed'
+//     })
+//     .select()
+//     .single()
 
-  if (error) {
-    return res.status(400).json(error)
-  }
+//   if (error) {
+//     return res.status(400).json(error)
+//   }
 
-  // 2️⃣ Insert ordered items
-  const orderItems = items.map(i => ({
-    order_id: order.id,
-    item_id: i.id,
-    quantity: i.quantity,
-    price: i.price
-  }))
+//   // 2️⃣ Insert ordered items
+//   const orderItems = items.map(i => ({
+//     order_id: order.id,
+//     item_id: i.id,
+//     quantity: i.quantity,
+//     price: i.price
+//   }))
 
-  const { error: itemsError } = await supabase
-    .from('order_items')
-    .insert(orderItems)
+//   const { error: itemsError } = await supabase
+//     .from('order_items')
+//     .insert(orderItems)
 
-  if (itemsError) {
-    return res.status(400).json(itemsError)
-  }
+//   if (itemsError) {
+//     return res.status(400).json(itemsError)
+//   }
 
-  // 3️⃣ Initial status log
-  await supabase.from('order_status_logs').insert({
-    order_id: order.id,
-    status: 'Placed'
-  })
+//   // 3️⃣ Initial status log
+//   await supabase.from('order_status_logs').insert({
+//     order_id: order.id,
+//     status: 'Placed'
+//   })
 
-  res.json({
-    message: 'Order placed successfully (Cash on Delivery)',
-    orderId: order.id
-  })
-}
+//   res.json({
+//     message: 'Order placed successfully (Cash on Delivery)',
+//     orderId: order.id
+//   })
+// }
 
 /**
  * USER ORDER HISTORY

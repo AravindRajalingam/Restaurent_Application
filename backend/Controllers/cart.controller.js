@@ -8,10 +8,10 @@ export const getCart = async (req, res) => {
       .from("cart_items")
       .select(`
         quantity,
-        price,
         menu_items (
           id,
           name,
+          price,
           image_url
         )
       `)
@@ -24,7 +24,7 @@ export const getCart = async (req, res) => {
       id: c.menu_items.id,
       name: c.menu_items.name,
       image_url: c.menu_items.image_url,
-      price: c.price,
+      price: c.menu_items.price,
       qty: c.quantity,
     }));
 

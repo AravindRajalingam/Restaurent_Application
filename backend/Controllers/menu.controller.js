@@ -78,6 +78,52 @@ export const getCategories = async (req, res) => {
 }
 
 
+export const searchItem = async (req, res) => {
+  try {
+    const { item } = req.params;
+
+    if (!item || item.trim().length < 2) {
+      return res.status(200).json({
+        success: true,
+        data: []
+      });
+    }
+
+    const keyword = item.toLowerCase();
+
+    const { data, error } = await supabase
+      .from("menu_items")
+      .select("id, name, category")
+      .or(
+        `
+        name.ilike.${keyword}%,
+        category.ilike.${keyword}%,
+        tags.cs.{${keyword}}
+        `
+      );
+
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.message
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Server error"
+    });
+  }
+};
+
+
+
+
 export const addCategory = async (req, res) => {
   try {
     const { name } = req.body;
@@ -124,7 +170,9 @@ export const addMenuItem = async (req, res) => {
     const { name, description, price, is_available, category_id } = req.body;
     const file = req.file;
 
-    // 🔍 Validation
+    // 🔹 TAGS
+    const tags = req.body.tags ? JSON.parse(req.body.tags) : [];
+
     if (!name || !name.trim()) {
       return res.status(400).json({
         success: false,
@@ -146,11 +194,9 @@ export const addMenuItem = async (req, res) => {
       });
     }
 
-    // 🧾 File name
     const fileExt = file.originalname.split(".").pop();
     const fileName = `menu-${Date.now()}.${fileExt}`;
 
-    // ⬆ Upload to Supabase Storage
     const { error: uploadError } = await supabase.storage
       .from("MenuItemImages")
       .upload(fileName, file.buffer, {
@@ -165,14 +211,12 @@ export const addMenuItem = async (req, res) => {
       });
     }
 
-    // 🌐 Get public URL
     const { data: publicUrlData } = supabase.storage
       .from("MenuItemImages")
       .getPublicUrl(fileName);
 
     const image_url = publicUrlData.publicUrl;
 
-    // 🧩 Insert menu item
     const { data, error } = await supabase
       .from("menu_items")
       .insert([{
@@ -182,6 +226,7 @@ export const addMenuItem = async (req, res) => {
         image_url,
         is_available: is_available ?? true,
         category_id,
+        tags, // ✅ STORED AS ARRAY
       }])
       .select();
 

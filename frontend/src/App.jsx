@@ -11,6 +11,7 @@ import Checkout from './components/Checkout.jsx';
 import PaymentSuccess from './components/PaymentSuccess.jsx';
 import Myorders from './components/MyOrders.jsx';
 import AddMenuItem from './components/Admin/AddMenuItem.jsx';
+import SelectedItems from './components/SelectedItems.jsx';
 
 function App() {
 
@@ -29,7 +30,8 @@ function App() {
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/payment-success" element={<PaymentSuccess/>}/>
             <Route path="/my-orders" element={<Myorders/>}/>
-                        <Route path="/add" element={<AddMenuItem/>}/>
+            <Route path="/add" element={<AddMenuItem/>}/>
+            <Route path='/item/:item_id' element={<SelectedItems/>} />
 
           </Route>
 

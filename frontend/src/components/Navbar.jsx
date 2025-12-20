@@ -23,13 +23,20 @@ export default function Navbar() {
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (
+        searchRef.current &&
+        !searchRef.current.contains(e.target)
+      ) {
+        setShowResults(false);
+      }
+
+      if (
         navRef.current &&
         !navRef.current.contains(e.target)
       ) {
         setOpenMenu(null);
-        setShowResults(false);
       }
     };
+
     document.addEventListener("mousedown", handleClickOutside);
     return () =>
       document.removeEventListener("mousedown", handleClickOutside);
@@ -62,13 +69,15 @@ export default function Navbar() {
     const timer = setTimeout(async () => {
       try {
         const res = await fetch(
-          `${API_URL}/menu/search-item/${search}`
+          `${API_URL}/menu/search-item/${encodeURIComponent(search)}`
         );
         const data = await res.json();
-        setItems(data.data || []);
+
+        setItems(data?.data || []);
         setShowResults(true);
       } catch {
         setItems([]);
+        setShowResults(false);
       }
     }, 300);
 
@@ -98,11 +107,7 @@ export default function Navbar() {
               onClick={() => setOpenMenu(openMenu === "menu" ? null : "menu")}
               className="btn btn-ghost btn-circle text-amber-400"
             >
-              <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2"
-                viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round"
-                  d="M4 6h16M4 12h16M4 18h10" />
-              </svg>
+              ☰
             </button>
 
             {openMenu === "menu" && (
@@ -154,6 +159,7 @@ export default function Navbar() {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              onFocus={() => search && setShowResults(true)}
               placeholder="Search dishes..."
               className="input input-sm w-full rounded-full
               bg-black/70 text-white
@@ -161,7 +167,6 @@ export default function Navbar() {
               placeholder:text-gray-400"
             />
 
-            {/* SEARCH RESULTS */}
             {showResults && (
               <ul className="menu bg-base-100 rounded-box mt-2
               shadow-lg absolute w-full z-50">
@@ -173,6 +178,7 @@ export default function Navbar() {
                           navigate(`/item/${item.id}`);
                           setSearch("");
                           setItems([]);
+                          setShowResults(false);
                           setShowSearch(false);
                         }}
                       >
@@ -189,7 +195,7 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* SEARCH ICON (UNCHANGED) */}
+          {/* SEARCH ICON */}
           <button
             onClick={() => {
               if (window.innerWidth < 640) {
@@ -200,42 +206,24 @@ export default function Navbar() {
             }}
             className="btn btn-ghost btn-circle text-amber-400"
           >
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2"
-              viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+            🔍
           </button>
 
-          {/* CART ICON (UNCHANGED) */}
+          {/* CART */}
           <button
             onClick={() => navigate("/cart")}
             className="btn btn-ghost btn-circle text-amber-400"
           >
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2"
-              viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round"
-                d="M3 3h2l.4 2M7 13h10l4-8H5.4
-                M7 13L5.4 5
-                M7 13l-2 4h14
-                M10 21a1 1 0 100-2
-                M18 21a1 1 0 100-2" />
-            </svg>
+            🛒
           </button>
 
-          {/* PROFILE ICON (UNCHANGED) */}
+          {/* PROFILE */}
           <div className="relative">
             <button
               onClick={() => setOpenMenu(openMenu === "profile" ? null : "profile")}
               className="btn btn-ghost btn-circle text-amber-400"
             >
-              <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2"
-                viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round"
-                  d="M5.121 17.804A13.937 13.937 0 0112 16
-                  c2.5 0 4.847.655 6.879 1.804M15 10
-                  a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
+              👤
             </button>
 
             {openMenu === "profile" && (
@@ -279,6 +267,7 @@ export default function Navbar() {
                 autoFocus
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
+                onFocus={() => setShowResults(true)}
                 type="text"
                 placeholder="Search dishes..."
                 className="input input-lg w-full rounded-xl
@@ -291,6 +280,7 @@ export default function Navbar() {
                   setMobileSearch(false);
                   setSearch("");
                   setItems([]);
+                  setShowResults(false);
                 }}
                 className="btn btn-ghost text-amber-400 text-xl"
               >
@@ -308,6 +298,7 @@ export default function Navbar() {
                           navigate(`/item/${item.id}`);
                           setMobileSearch(false);
                           setSearch("");
+                          setShowResults(false);
                         }}
                       >
                         {item.name}

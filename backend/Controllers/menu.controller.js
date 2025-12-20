@@ -47,6 +47,63 @@ export const getMenu = async (req, res) => {
   }
 }
 
+export const getSingleMenuItem = async (req, res) => {
+  try {
+    const { item_id } = req.params;
+
+    if (!item_id) {
+      return res.status(400).json({
+        success: false,
+        message: "Item ID is required"
+      });
+    }
+
+    const { data, error } = await supabase
+      .from("menu_items")
+      .select(`
+        id,
+        name,
+        description,
+        price,
+        image_url,
+        categories (
+          name
+        )
+      `)
+      .eq("id", item_id)
+      .eq("is_available", true)
+      .single();
+
+    if (error) {
+      return res.status(404).json({
+        success: false,
+        message: "Item not found"
+      });
+    }
+
+    const result = {
+      id: data.id,
+      name: data.name,
+      description: data.description,
+      price: data.price,
+      image_url: data.image_url,
+      category: data.categories?.name || null
+    };
+
+    res.status(200).json({
+      success: true,
+      data: result
+    });
+
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: err.message
+    });
+  }
+};
+
 
 export const getCategories = async (req, res) => {
   try {
@@ -93,25 +150,72 @@ export const searchItem = async (req, res) => {
       .from("menu_items")
       .select("id, name")
       .ilike("name", `${item}%`); // 🔍 SEARCH
+    if (!item || item.trim().length < 2) {
+      return res.status(200).json({
+        success: true,
+        data: [],
+      });
+    }
+
+    // 🔹 Split input into words
+    const keywords = item
+      .toLowerCase()
+      .split(" ")
+      .filter(Boolean); // removes empty words
+
+    const { data, error } = await supabase
+      .from("menu_items")
+      .select(`
+        id,
+        name,
+        tags,
+        categories (
+          name
+        )
+      `);
 
     if (error) {
       return res.status(400).json({
         success: false,
-        message: error.message
+        message: error.message,
       });
     }
 
+    const filteredData = data.filter((menu) => {
+      const name = menu.name.toLowerCase();
+      const category = menu.categories?.name?.toLowerCase() || "";
+      const tags = (menu.tags || []).map(t => t.toLowerCase());
+
+      return keywords.some((word) =>
+        name.includes(word) ||
+        category.includes(word) ||
+        tags.some(tag => tag.includes(word))
+      );
+    });
+
     res.status(200).json({
       success: true,
+<<<<<<< ours
       count: data.length,
       data
+=======
+      data: filteredData.map(menu => ({
+        id: menu.id,
+        name: menu.name,
+        category: menu.categories?.name || "",
+        tags: menu.tags || [],
+      })),
+>>>>>>> theirs
     });
 
   } catch (err) {
     res.status(500).json({
       success: false,
       message: "Server error",
+<<<<<<< ours
       error: err.message
+=======
+>>>>>>> theirs
     });
   }
 };

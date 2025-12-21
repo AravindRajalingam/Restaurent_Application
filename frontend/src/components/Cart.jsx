@@ -7,7 +7,10 @@ export default function Cart() {
   const API_URL = import.meta.env.VITE_API_URL;
 
   const [cart, setCart] = useState([]);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const [incloadingItemId, setIncloadingItemId] = useState(null);
+  const [decloadingItemId, setDecloadingItemId] = useState(null);
+  const [removeLoadingItemId, setRemoveLoadingItemId] = useState(null);
 
   useEffect(() => {
     async function fetchCart() {
@@ -29,8 +32,10 @@ export default function Cart() {
   }, []);
 
   const increaseCount = async (cartId) => {
-    const token = localStorage.getItem("access_token");
+  const token = localStorage.getItem("access_token");
+  setIncloadingItemId(cartId); // start loading
 
+  try {
     await fetch(`${API_URL}/cart/increase/${cartId}`, {
       method: "PUT",
       headers: {
@@ -43,18 +48,24 @@ export default function Cart() {
         item.id === cartId ? { ...item, qty: item.qty + 1 } : item
       )
     );
-  };
+  } finally {
+    setIncloadingItemId(null); // stop loading
+  }
+};
+
 
 
   const decreaseCount = async (cartId) => {
     const token = localStorage.getItem("access_token");
-
-    await fetch(`${API_URL}/cart/decrease/${cartId}`, {
+    setDecloadingItemId(cartId); // start loading
+    try {
+      await fetch(`${API_URL}/cart/decrease/${cartId}`, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
+     
 
     setCart(prev =>
       prev
@@ -63,14 +74,18 @@ export default function Cart() {
         )
         .filter(item => item.qty > 0) // ✅ disappears from UI
     );
+   }finally{
+    setDecloadingItemId(null); // stop loading
+   }
   };
 
 
 
   const removeFromCart = async (id) => {
     const token = localStorage.getItem("access_token");
-
-    await fetch(`${API_URL}/cart/remove-from-cart/${id}`, {
+    setRemoveLoadingItemId(id);
+    try{
+      await fetch(`${API_URL}/cart/remove-from-cart/${id}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -78,6 +93,10 @@ export default function Cart() {
     });
 
     setCart((prev) => prev.filter((item) => item.id !== id));
+    } finally{
+      setRemoveLoadingItemId(null);
+    }
+    
   };
 
 
@@ -133,27 +152,43 @@ export default function Cart() {
                     <div className="flex items-center gap-3">
                       <button
                         onClick={() => decreaseCount(item.id)}
-                        className="btn btn-sm btn-outline btn-error"
+                        className="btn btn-xs sm:btn-sm btn-outline btn-error"
+                        disabled={decloadingItemId===item.id}
                       >
-                        −
+                        {decloadingItemId === item.id ? (
+    <span className="loading loading-spinner loading-xs"></span>
+  ) : (
+    "-"
+  )}
                       </button>
 
                       <span className="badge badge-primary badge-lg">
                         {item.qty}
                       </span>
 
-                      <button
-                        onClick={() => increaseCount(item.id)}
-                        className="btn btn-sm btn-outline btn-primary"
-                      >
-                        +
-                      </button>
+                     <button
+  onClick={() => increaseCount(item.id)}
+  className="btn btn-xs sm:btn-sm btn-outline btn-primary"
+  disabled={incloadingItemId === item.id}
+>
+  {incloadingItemId === item.id ? (
+    <span className="loading loading-spinner loading-xs"></span>
+  ) : (
+    "+"
+  )}
+</button>
+
 
                       <button
                         onClick={() => removeFromCart(item.id)}
                         className="btn btn-sm btn-outline btn-error"
+                        disabled={removeLoadingItemId === item.id}
                       >
-                        Remove
+                        {removeLoadingItemId === item.id ? (
+                          <span className="loading loading-spinner loading-xs"></span>
+                        ) : (
+                    
+                        "Remove")}
                       </button>
                     </div>
                   </li>

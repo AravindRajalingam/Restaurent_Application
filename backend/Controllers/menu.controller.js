@@ -182,17 +182,17 @@ export const getCategories = async (req, res) => {
 //       );
 //     });
 
-//     res.status(200).json({
-//       success: true,
-//       count: data.length,
-//       data
-//       data: filteredData.map(menu => ({
-//         id: menu.id,
-//         name: menu.name,
-//         category: menu.categories?.name || "",
-//         tags: menu.tags || [],
-//       })),
-//     });
+    res.status(200).json({
+      success: true,
+      count: data.length,
+      data,
+      data: filteredData.map(menu => ({
+        id: menu.id,
+        name: menu.name,
+        category: menu.categories?.name || "",
+        tags: menu.tags || [],
+      })),
+    });
 
 //   } catch (err) {
 //     res.status(500).json({

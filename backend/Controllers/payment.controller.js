@@ -315,6 +315,7 @@ export const cashOnDelivery = async (req, res) => {
         mode: "cod",
         payment_status: "Pending",
         order_status: "Placed",
+        deliveryAddress:req.body.deliveryAddress
       })
       .select()
       .single();

@@ -78,6 +78,7 @@ export const createPaymentOrder = async (req, res) => {
         mode: "online",
         payment_status: "Pending",
         order_status: "Placed",
+        deliveryAddress: req.body.deliveryAddress
       })
       .select()
       .single();

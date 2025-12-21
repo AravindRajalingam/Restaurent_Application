@@ -8,98 +8,150 @@ export default function Checkout() {
   const API_URL = import.meta.env.VITE_API_URL;
 
   const [cart, setCart] = useState([]);
-  const [loading, setLoading] = useState(true); // ✅ page loading state
-  const [showModal, setShowModal] = useState(false); // For payment selection modal
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [user, setUser] = useState(null);
+
+  /* 🏠 DELIVERY STATES */
+  const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [detecting, setDetecting] = useState(false);
+  const [coords, setCoords] = useState(null);
+  const [showMap, setShowMap] = useState(false);
+  const [mapCenter, setMapCenter] = useState({
+    lat: 20.5937, // India default
+    lng: 78.9629,
+  });
+
   const navigate = useNavigate();
   const location = useLocation();
 
   const GST_PERCENT = 5;
 
+  /* ---------------- PROTECT ROUTE ---------------- */
   useEffect(() => {
-
     if (!location.state?.fromCart) {
       navigate("/cart", { replace: true });
     }
   }, []);
 
-
+  /* ---------------- FETCH CART ---------------- */
   useEffect(() => {
     async function fetchCart() {
       const token = getAccessToken();
       if (!token) return;
 
+      const res = await fetch(`${API_URL}/cart/get-cart`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-      try {
-        const res = await fetch(`${API_URL}/cart/get-cart`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        const result = await res.json();
-        if (result.success) {
-          setCart(result.data);
-        }
-      } finally {
-        setLoading(false); // stop loading after fetch
-      }
+      const result = await res.json();
+      if (result.success) setCart(result.data);
+      setLoading(false);
     }
-
     fetchCart();
   }, []);
 
+  /* ---------------- FETCH USER ---------------- */
+  useEffect(() => {
+    async function fetchUser() {
+      const token = getAccessToken();
+      if (!token) return;
+
+      const res = await fetch(`${API_URL}/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const result = await res.json();
+      if (res.ok) setUser(result.user);
+    }
+    fetchUser();
+  }, []);
+
+  /* ---------------- DELIVERY HELPERS ---------------- */
+
+  const reverseGeocode = async (lat, lon) => {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
+    );
+    const data = await res.json();
+    return data.display_name || "";
+  };
+
+  const detectCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation not supported");
+      return;
+    }
+
+    setDetecting(true);
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setCoords({ latitude, longitude });
+
+        const address = await reverseGeocode(latitude, longitude);
+        setDeliveryAddress(address);
+        setDetecting(false);
+      },
+      () => {
+        alert("Permission denied");
+        setDetecting(false);
+      }
+    );
+  };
+
+  const useSavedAddress = () => {
+    if (!user?.address) {
+      alert("No saved address found");
+      return;
+    }
+    setDeliveryAddress(user.address);
+  };
+
+  const openMapPicker = async () => {
+    // If we already have coords (from detect location), use them
+    if (coords) {
+      setMapCenter({
+        lat: coords.latitude,
+        lng: coords.longitude,
+      });
+    }
+
+    setShowMap(true);
+  };
+
+  const confirmMapLocation = async () => {
+    const address = await reverseGeocode(mapCenter.lat, mapCenter.lng);
+    setDeliveryAddress(address);
+    setShowMap(false);
+  };
+
+  const finalAddress = deliveryAddress;
+
+  /* ---------------- BILL ---------------- */
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
   const gstAmount = (subtotal * GST_PERCENT) / 100;
   const amount = subtotal + gstAmount;
 
+  /* ---------------- PAYMENT ---------------- */
   const handlePayment = (method) => {
+    if (!finalAddress) {
+      alert("Please select delivery address");
+      return;
+    }
+
     setShowModal(false);
 
     if (method === "online") {
-      setLoading(true);
-      startPayment(navigate, setLoading);
-    } else if (method === "cod") {
-      handleCod();
+      startPayment(navigate, setLoading, finalAddress);
+    }
+    else if( method === "cod"){
+      navigate("/payment-success", {
+        state: { orderNumber: "COD"+Math.floor(100000 + Math.random() * 900000), amount: amount.toFixed(2), mode: "cod" },
+      });
     }
   };
 
-  async function handleCod() {
-    try {
-      const token = getAccessToken();
-      if (!token) return;
-
-
-      const Res = await fetch(`${API_URL}/payments/cod`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await Res.json();
-
-      if (!data.success) {
-        alert("Failed to create order");
-        setLoading(false);
-        return;
-      }
-
-      const { orderId, bill } = data;
-      const amount = bill.grandTotal;
-
-      navigate("/payment-success", {
-        state: { orderNumber: orderId, amount: amount.toFixed(2), mode: "cod" },
-      });
-    } catch (err) {
-      console.error(err);
-      alert("Verification error");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  // ✅ Full-page spinner while initial page is loading
   if (loading && cart.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-base-200">
@@ -111,16 +163,14 @@ export default function Checkout() {
   return (
     <div className="min-h-screen bg-base-200 flex items-center justify-center p-4">
       <div className="card w-full max-w-5xl bg-base-100 shadow-2xl">
-
-        {/* HEADER */}
         <div className="card-body">
-          <h2 className="card-title justify-center text-2xl sm:text-3xl text-primary">
-            Order Confirmation
+          <h2 className="card-title justify-center text-3xl text-primary">
+            Checkout
           </h2>
 
           <div className="divider"></div>
 
-          {/* TABLE */}
+          {/* ORDER TABLE */}
           <div className="overflow-x-auto">
             <table className="table table-zebra w-full">
               <thead>
@@ -128,68 +178,75 @@ export default function Checkout() {
                   <th>Item</th>
                   <th className="text-right">Price</th>
                   <th className="text-center">Qty</th>
-                  <th className="text-right">GST</th>
                   <th className="text-right">Subtotal</th>
                 </tr>
               </thead>
-
               <tbody>
-                {cart.map((item) => {
-                  const itemTotal = item.price * item.qty;
-                  const itemGST = (itemTotal * GST_PERCENT) / 100;
-                  return (
-                    <tr key={item.id}>
-                      <td className="font-semibold">{item.name}</td>
-                      <td className="text-right">{formatINR(item.price.toFixed(2))}</td>
-                      <td className="text-center">
-                        <span className="badge badge-secondary">{item.qty}</span>
-                      </td>
-                      <td className="text-right">{formatINR(itemGST.toFixed(2))}</td>
-                      <td className="text-right font-medium">{formatINR((itemTotal + itemGST).toFixed(2))}</td>
-                    </tr>
-                  );
-                })}
+                {cart.map((item) => (
+                  <tr key={item.id}>
+                    <td>{item.name}</td>
+                    <td className="text-right">{formatINR(item.price)}</td>
+                    <td className="text-center">{item.qty}</td>
+                    <td className="text-right">
+                      {formatINR(item.price * item.qty)}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
-
-              {/* TOTALS */}
-              <tfoot>
-                <tr>
-                  <td colSpan="4" className="text-right font-semibold">
-                    Subtotal
-                  </td>
-                  <td className="text-right font-semibold">{formatINR(subtotal.toFixed(2))}</td>
-                </tr>
-                <tr>
-                  <td colSpan="4" className="text-right font-semibold">
-                    GST ({GST_PERCENT}%)
-                  </td>
-                  <td className="text-right font-semibold">{formatINR(gstAmount.toFixed(2))}</td>
-                </tr>
-                <tr>
-                  <td colSpan="4" className="text-right text-lg font-bold text-primary">
-                    Grand Total
-                  </td>
-                  <td className="text-right text-lg font-bold text-primary">
-                    {formatINR(amount.toFixed(2))}
-                  </td>
-                </tr>
-              </tfoot>
             </table>
           </div>
 
-          {/* INFO ALERT */}
-          <div className="alert alert-info mt-6">
-            <span>Please review your order before confirming payment.</span>
+          {/* TOTAL */}
+          <div className="text-right mt-4 space-y-3">
+            <p>Subtotal: {formatINR(subtotal)}</p>
+            <p>GST (5%): {formatINR(gstAmount)}</p>
+            <p className="text-xl font-bold text-primary">
+              Total: {formatINR(amount)}
+            </p>
           </div>
 
-          {/* ACTION BUTTONS */}
-          <div className="card-actions justify-center mt-8 gap-4">
+          {/* DELIVERY LOCATION */}
+          <div className="mt-6 p-4 border rounded-xl">
+            <h3 className="font-semibold mb-3">📦 Delivery Location</h3>
+
+            <div className="flex gap-2 mb-3 flex-wrap">
+              <button
+                className="btn btn-xs btn-outline"
+                onClick={useSavedAddress}
+              >
+                Saved Address
+              </button>
+
+              <button
+                className="btn btn-xs btn-outline"
+                onClick={detectCurrentLocation}
+              >
+                {detecting ? "Detecting..." : "Current Location"}
+              </button>
+
+              <button
+                className="btn btn-xs btn-outline"
+                onClick={openMapPicker}
+              >
+                Google Map
+              </button>
+            </div>
+
+            <textarea
+              className="textarea textarea-bordered w-full text-sm"
+              rows="3"
+              placeholder="Enter delivery address"
+              value={deliveryAddress}
+              onChange={(e) => setDeliveryAddress(e.target.value)}
+            />
+          </div>
+
+          {/* ACTIONS */}
+          <div className="card-actions justify-center mt-6 gap-4">
             <button
               className="btn btn-primary w-40"
-              disabled={loading}
               onClick={() => setShowModal(true)}
             >
-              {loading && <span className="loading loading-spinner loading-sm mr-2"></span>}
               Confirm Order
             </button>
 
@@ -205,25 +262,62 @@ export default function Checkout() {
 
       {/* PAYMENT MODAL */}
       {showModal && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50">
-          <div className="bg-base-100 rounded-xl shadow-2xl w-80 p-6">
-            <h3 className="text-lg font-bold text-center mb-4">Select Payment Method</h3>
-            <div className="flex flex-col gap-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-base-100 p-6 rounded-xl w-80">
+            <h3 className="font-bold mb-4 text-center">Payment Method</h3>
+
+            <button
+              className="btn btn-primary w-full mb-3"
+              onClick={() => handlePayment("online")}
+            >
+              Online Payment
+            </button>
+
+            <button
+              className="btn btn-outline-error w-full mb-3"
+              onClick={() => handlePayment("cod")}
+            >
+              Cash on Delivery
+            </button>
+
+            <button
+              className="btn btn-ghost w-full"
+              onClick={() => setShowModal(false)}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+      {showMap && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+          <div className="bg-base-100 rounded-xl p-4 w-[90%] max-w-xl">
+            <h3 className="font-semibold mb-2">Pick Location</h3>
+
+            {/* MAP */}
+            <iframe
+              title="map-picker"
+              width="100%"
+              height="300"
+              className="rounded-lg border"
+              src={`https://www.google.com/maps?q=${mapCenter.lat},${mapCenter.lng}&z=16&output=embed`}
+            />
+
+            <p className="text-xs text-gray-500 mt-2 text-center">
+              Move the map and confirm center location
+            </p>
+
+            <div className="flex gap-2 mt-4">
               <button
                 className="btn btn-primary w-full"
-                onClick={() => handlePayment("online")}
+                onClick={confirmMapLocation}
               >
-                Online Payment
+                Use This Location
               </button>
+
               <button
-                className="btn btn-outline btn-secondary w-full"
-                onClick={() => handlePayment("cod")}
-              >
-                Cash on Delivery
-              </button>
-              <button
-                className="btn btn-ghost w-full"
-                onClick={() => setShowModal(false)}
+                className="btn btn-outline w-full"
+                onClick={() => setShowMap(false)}
               >
                 Cancel
               </button>

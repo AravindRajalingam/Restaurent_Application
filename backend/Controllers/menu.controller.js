@@ -135,73 +135,73 @@ export const getCategories = async (req, res) => {
 }
 
 
-export const searchItem = async (req, res) => {
-  try {
-    const { item } = req.params; // search keyword
+// export const searchItem = async (req, res) => {
+//   try {
+//     const { item } = req.params; // search keyword
 
-    if (!item || item.trim() === "") {
-      return res.status(400).json({
-        success: false,
-        message: "Search term is required"
-      });
-    }
+//     if (!item || item.trim() === "") {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Search term is required"
+//       });
+//     }
 
-    // 🔹 Split input into words
-    const keywords = item
-      .toLowerCase()
-      .split(" ")
-      .filter(Boolean); // removes empty words
+//     // 🔹 Split input into words
+//     const keywords = item
+//       .toLowerCase()
+//       .split(" ")
+//       .filter(Boolean); // removes empty words
 
-    const { data, error } = await supabase
-      .from("menu_items")
-      .select(`
-        id,
-        name,
-        tags,
-        categories (
-          name
-        )
-      `);
+//     const { data, error } = await supabase
+//       .from("menu_items")
+//       .select(`
+//         id,
+//         name,
+//         tags,
+//         categories (
+//           name
+//         )
+//       `);
 
-    if (error) {
-      return res.status(400).json({
-        success: false,
-        message: error.message,
-      });
-    }
+//     if (error) {
+//       return res.status(400).json({
+//         success: false,
+//         message: error.message,
+//       });
+//     }
 
-    const filteredData = data.filter((menu) => {
-      const name = menu.name.toLowerCase();
-      const category = menu.categories?.name?.toLowerCase() || "";
-      const tags = (menu.tags || []).map(t => t.toLowerCase());
+//     const filteredData = data.filter((menu) => {
+//       const name = menu.name.toLowerCase();
+//       const category = menu.categories?.name?.toLowerCase() || "";
+//       const tags = (menu.tags || []).map(t => t.toLowerCase());
 
-      return keywords.some((word) =>
-        name.includes(word) ||
-        category.includes(word) ||
-        tags.some(tag => tag.includes(word))
-      );
-    });
+//       return keywords.some((word) =>
+//         name.includes(word) ||
+//         category.includes(word) ||
+//         tags.some(tag => tag.includes(word))
+//       );
+//     });
 
-    res.status(200).json({
-      success: true,
-      count: data.length,
-      data
-      data: filteredData.map(menu => ({
-        id: menu.id,
-        name: menu.name,
-        category: menu.categories?.name || "",
-        tags: menu.tags || [],
-      })),
-    });
+//     res.status(200).json({
+//       success: true,
+//       count: data.length,
+//       data
+//       data: filteredData.map(menu => ({
+//         id: menu.id,
+//         name: menu.name,
+//         category: menu.categories?.name || "",
+//         tags: menu.tags || [],
+//       })),
+//     });
 
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-      error: err.message
-    });
-  }
-};
+//   } catch (err) {
+//     res.status(500).json({
+//       success: false,
+//       message: "Server error",
+//       error: err.message
+//     });
+//   }
+// };
 
 
 

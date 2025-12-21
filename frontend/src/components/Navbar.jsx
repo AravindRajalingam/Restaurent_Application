@@ -49,6 +49,8 @@ export default function Navbar() {
     const token = getAccessToken();
 
     if (!token) return;
+    console.log(token);
+    
 
     fetch(`${API_URL}/auth/me`, {
       headers: { Authorization: `Bearer ${token}` },

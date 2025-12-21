@@ -72,6 +72,7 @@ export default function MenuPage() {
 
   /* ---------------- ADD TO CART ---------------- */
   const addToCart = async (item) => {
+  
 
     const token = getAccessToken();
     if (!token) {
@@ -80,6 +81,7 @@ export default function MenuPage() {
         nature: "info",
         content: "Please Login to Continue"
       })
+      return
     }
 
     setLoadingCart(item.id);

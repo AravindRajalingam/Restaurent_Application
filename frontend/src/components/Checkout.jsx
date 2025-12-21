@@ -147,7 +147,7 @@ export default function Checkout() {
     if (method === "online") {
       startPayment(navigate, setLoading, finalAddress);
     }
-    else if( method === "cod"){
+    else if (method === "cod") {
       handleCod()
     }
   };
@@ -165,6 +165,9 @@ export default function Checkout() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
+        body: JSON.stringify({
+          deliveryAddress: finalAddress,
+        }),
       });
 
       const data = await Res.json();
@@ -183,7 +186,7 @@ export default function Checkout() {
 
       navigate("/payment-success", {
         state: { orderNumber: orderId, amount: amount.toFixed(2), mode: "cod", fromSuccess: true, },
-        replace:true
+        replace: true
       });
     } catch (err) {
       console.error(err);
@@ -294,7 +297,7 @@ export default function Checkout() {
 
             <button
               className="btn btn-outline btn-error w-40"
-              onClick={() => navigate("/cart",{replace:true})}
+              onClick={() => navigate("/cart", { replace: true })}
             >
               Back to Cart
             </button>
@@ -316,7 +319,7 @@ export default function Checkout() {
             </button>
 
             <button
-              className="btn btn-outline-error w-full mb-3"
+              className="btn btn-outline btn-error w-full mb-3"
               onClick={() => handlePayment("cod")}
             >
               Cash on Delivery

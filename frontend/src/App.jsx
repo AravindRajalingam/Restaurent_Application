@@ -21,7 +21,8 @@ function App() {
   async function refreshToken() {
     
     const expiry = localStorage.getItem("token_expiry");
-    
+    console.log(expiry);
+        
     
     const now = Date.now();
 

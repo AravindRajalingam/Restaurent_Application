@@ -1,6 +1,6 @@
 import { getAccessToken } from "./getAccessToken";
 
-export async function startPayment(navigate, setLoading) {
+export async function startPayment(navigate, setLoading,deliveryAddress) {
   const API_URL = import.meta.env.VITE_API_URL;
   setLoading(true); // 🔹 move here
 
@@ -15,7 +15,8 @@ export async function startPayment(navigate, setLoading) {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
-      }
+      },
+      body: JSON.stringify({ deliveryAddress  }),
     });
 
     const data = await createOrderRes.json();

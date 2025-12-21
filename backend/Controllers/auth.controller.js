@@ -126,7 +126,7 @@ export const getMe = async (req, res) => {
     // 3️⃣ Get profile data using user ID
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("name")
+      .select("name,address_line,city,state,pincode,phone")
       .eq("id", userId)
       .single();
 
@@ -136,12 +136,21 @@ export const getMe = async (req, res) => {
       });
     }
 
+    const address = [
+  profile.address_line,
+  profile.city,
+  profile.state,
+  profile.pincode,
+].filter(Boolean).join(", ");
+
     // 4️⃣ Send clean response to frontend
     res.json({
       user: {
         id: userId,
         email: authData.user.email,
         name: profile.name,
+        phone: profile.phone,
+        address: address
       },
     });
   } catch (err) {

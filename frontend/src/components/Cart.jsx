@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { formatINR } from "./Utils/INR";
 import { useNavigate } from "react-router-dom";
 import { isLoggedIn } from "./Utils/IsLoggedIn";
+import { getAccessToken } from "./Utils/getAccessToken";
+
 
 export default function Cart() {
 
@@ -17,12 +19,12 @@ export default function Cart() {
   useEffect(() => {
     async function fetchCart() {
 
-      if (!isLoggedIn()) {
+      const token = getAccessToken();
+      if (!token) {
         setLoading(false);
-        return;
-      }
+        return
+      };
 
-      const token = localStorage.getItem("access_token");
 
       try {
         const res = await fetch(`${API_URL}/cart/get-cart`, {
@@ -44,7 +46,9 @@ export default function Cart() {
   }, []);
 
   const increaseCount = async (cartId) => {
-    const token = localStorage.getItem("access_token");
+    const token = getAccessToken();
+    if (!token) return;
+
     setIncloadingItemId(cartId);
 
     try {
@@ -64,7 +68,9 @@ export default function Cart() {
   };
 
   const decreaseCount = async (cartId) => {
-    const token = localStorage.getItem("access_token");
+    const token = getAccessToken();
+    if (!token) return;
+
     setDecloadingItemId(cartId);
 
     try {
@@ -88,7 +94,9 @@ export default function Cart() {
   };
 
   const removeFromCart = async (id) => {
-    const token = localStorage.getItem("access_token");
+    const token = getAccessToken();
+    if (!token) return;
+
     setRemoveLoadingItemId(id);
 
     try {

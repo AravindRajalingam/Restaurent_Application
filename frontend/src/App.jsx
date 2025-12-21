@@ -12,7 +12,6 @@ import PaymentSuccess from './components/PaymentSuccess.jsx';
 import Myorders from './components/MyOrders.jsx';
 import AddMenuItem from './components/Admin/AddMenuItem.jsx';
 import SelectedItems from './components/SelectedItems.jsx';
-
 function App() {
 
   return (
@@ -25,13 +24,13 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/item-menu" element={<MenuItems />} />
             <Route path="/cart" element={<Cart />} />
-            <Route path="/about-us" element={<About/>} />
+            <Route path="/about-us" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/checkout" element={<Checkout />} />
-            <Route path="/payment-success" element={<PaymentSuccess/>}/>
-            <Route path="/my-orders" element={<Myorders/>}/>
-            <Route path="/add" element={<AddMenuItem/>}/>
-            <Route path='/item/:item_id' element={<SelectedItems/>} />
+            <Route path="/payment-success" element={<PaymentSuccess />} />
+            <Route path="/my-orders" element={<Myorders />} />
+            <Route path="/add" element={<AddMenuItem />} />
+            <Route path='/item/:item_id' element={<SelectedItems />} />
 
           </Route>
 

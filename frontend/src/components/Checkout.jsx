@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { formatINR } from "./Utils/INR";
-import { useNavigate,useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { startPayment } from "./Utils/Payment";
-import { isLoggedIn } from "./Utils/IsLoggedIn";
+import { getAccessToken } from "./Utils/getAccessToken";
 
 export default function Checkout() {
   const API_URL = import.meta.env.VITE_API_URL;
@@ -16,10 +16,6 @@ export default function Checkout() {
   const GST_PERCENT = 5;
 
   useEffect(() => {
-    if (!isLoggedIn()) {
-      navigate("/auth");
-      return;
-    }
 
     if (!location.state?.fromCart) {
       navigate("/cart", { replace: true });
@@ -29,7 +25,9 @@ export default function Checkout() {
 
   useEffect(() => {
     async function fetchCart() {
-      const token = localStorage.getItem("access_token");
+      const token = getAccessToken();
+      if (!token) return;
+
 
       try {
         const res = await fetch(`${API_URL}/cart/get-cart`, {
@@ -67,13 +65,15 @@ export default function Checkout() {
 
   async function handleCod() {
     try {
-      const access_token = localStorage.getItem("access_token");
+      const token = getAccessToken();
+      if (!token) return;
+
 
       const Res = await fetch(`${API_URL}/payments/cod`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${access_token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 

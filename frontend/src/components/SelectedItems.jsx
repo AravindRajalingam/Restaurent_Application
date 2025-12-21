@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { isLoggedIn } from "./Utils/IsLoggedIn";
 import Toast from "./Utils/Toast";
+import { getAccessToken } from "./Utils/getAccessToken";
 export default function SelectedItems() {
   const { item_id } = useParams();
   const navigate = useNavigate();
@@ -37,8 +37,9 @@ export default function SelectedItems() {
 
   /* ---------------- FETCH CART ---------------- */
   const fetchCart = async () => {
-    const token = localStorage.getItem("access_token");
+    const token = getAccessToken();
     if (!token) return;
+
 
     try {
       const res = await fetch(`${API_URL}/cart/get-cart`, {
@@ -58,9 +59,10 @@ export default function SelectedItems() {
   /* ---------------- ADD TO CART ---------------- */
   const addToCart = async () => {
     if (!item) return;
-    const token = localStorage.getItem("access_token");
 
-    if (!isLoggedIn()) {
+    const token = getAccessToken();
+
+    if (!token) {
       setToast({
         show: true,
         nature: "info",
@@ -96,7 +98,9 @@ export default function SelectedItems() {
   /* ---------------- REMOVE FROM CART ---------------- */
   const removeFromCart = async () => {
     if (!item) return;
-    const token = localStorage.getItem("access_token");
+    const token = getAccessToken();
+    if (!token) return;
+
     setActionLoading(true);
 
     try {

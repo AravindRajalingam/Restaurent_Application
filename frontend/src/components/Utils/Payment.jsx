@@ -1,16 +1,20 @@
+import { getAccessToken } from "./getAccessToken";
+
 export async function startPayment(navigate, setLoading) {
   const API_URL = import.meta.env.VITE_API_URL;
   setLoading(true); // 🔹 move here
 
   try {
-    const access_token = localStorage.getItem("access_token");
+    const token = getAccessToken();
+    if (!token) return;
+
 
     // 1️⃣ Create order on backend
     const createOrderRes = await fetch(`${API_URL}/payments/create-order`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${access_token}`,
+        Authorization: `Bearer ${token}`,
       }
     });
 
@@ -68,14 +72,15 @@ export async function startPayment(navigate, setLoading) {
 
       modal: {
         ondismiss: async function () {
-          const access_token = localStorage.getItem("access_token");
+          const token = getAccessToken();
+          if (!token) return;
 
           try {
             await fetch(`${API_URL}/payments/update-failed`, {
               method: "PUT",
               headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${access_token}`,
+                Authorization: `Bearer ${token}`,
               },
               body: JSON.stringify({ orderId }),
             });

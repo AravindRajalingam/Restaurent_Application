@@ -1,4 +1,6 @@
+import { getAccessToken } from "./getAccessToken";
+
 export const isLoggedIn = () => {
-  const token = localStorage.getItem("access_token");
+  const token = getAccessToken;
   return Boolean(token && token.trim() !== "");
 };

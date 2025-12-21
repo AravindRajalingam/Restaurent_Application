@@ -15,13 +15,16 @@ export default function AddCategory() {
     try {
       setLoading(true);
 
-      const access_token = localStorage.getItem("access_token");
+
+      const token = getAccessToken();
+      if (!token) return;
+
 
       const res = await fetch(`${API_URL}/menu/add-category`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-        //   Authorization: `Bearer ${access_token}`,
+          //   Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ name }),
       });

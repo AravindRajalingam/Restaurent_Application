@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { formatINR } from "./Utils/INR";
 import sampleimg from '../assets/sample.avif';
-import { isLoggedIn } from "./Utils/IsLoggedIn";
 import { useNavigate } from "react-router-dom";
 import Toast from "./Utils/Toast";
+import { getAccessToken } from "./Utils/getAccessToken";
 export default function MenuPage() {
 
   const API_URL = import.meta.env.VITE_API_URL;
@@ -53,8 +53,9 @@ export default function MenuPage() {
   /* ---------------- FETCH CART ---------------- */
   useEffect(() => {
     async function fetchCart() {
-      const token = localStorage.getItem("access_token");
-      if(!token)return
+      const token = getAccessToken();
+      if (!token) return;
+
       try {
         const res = await fetch(`${API_URL}/cart/get-cart`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -71,15 +72,16 @@ export default function MenuPage() {
 
   /* ---------------- ADD TO CART ---------------- */
   const addToCart = async (item) => {
-    if (!isLoggedIn()) {
+
+    const token = getAccessToken();
+    if (!token) {
       setToast({
-        show:true,
-        nature:"info",
-        content:"Please Login to Continue"
+        show: true,
+        nature: "info",
+        content: "Please Login to Continue"
       })
-      return
     }
-    const token = localStorage.getItem("access_token");
+
     setLoadingCart(item.id);
     try {
       await fetch(`${API_URL}/cart/add-to-cart`, {
@@ -105,7 +107,9 @@ export default function MenuPage() {
 
   /* ---------------- REMOVE FROM CART ---------------- */
   const removeFromCart = async (id) => {
-    const token = localStorage.getItem("access_token");
+    const token = getAccessToken();
+    if (!token) return;
+
     setLoadingCart(id);
     try {
       await fetch(`${API_URL}/cart/remove-from-cart/${id}`, {

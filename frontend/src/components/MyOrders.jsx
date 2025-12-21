@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { formatINR } from "./Utils/INR";
 import { useNavigate } from "react-router-dom";
 import { isLoggedIn } from "./Utils/IsLoggedIn";
+import { getAccessToken } from "./Utils/getAccessToken";
 
 export default function MyOrders() {
   const API_URL = import.meta.env.VITE_API_URL;
@@ -11,13 +12,14 @@ export default function MyOrders() {
 
   useEffect(() => {
     async function fetchOrders() {
-      if (!isLoggedIn()) {
-        setLoading(false);
-        return;
-      }
 
       try {
-        const token = localStorage.getItem("access_token");
+        const token = getAccessToken();
+        if (!token) {
+          setLoading(false)
+          return
+        };
+
         const res = await fetch(`${API_URL}/orders/my-orders`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -123,26 +125,24 @@ export default function MyOrders() {
                 </td>
                 <td>
                   <span
-                    className={`badge ${
-                      order.payment_status === "Paid"
+                    className={`badge ${order.payment_status === "Paid"
                         ? "badge-success"
                         : order.payment_status === "Pending"
-                        ? "badge-warning"
-                        : order.payment_status === "Failed"
-                        ? "badge-error"
-                        : "badge-ghost"
-                    }`}
+                          ? "badge-warning"
+                          : order.payment_status === "Failed"
+                            ? "badge-error"
+                            : "badge-ghost"
+                      }`}
                   >
                     {order.payment_status}
                   </span>
                 </td>
                 <td>
                   <span
-                    className={`badge ${
-                      order.order_status === "Placed"
+                    className={`badge ${order.order_status === "Placed"
                         ? "badge-info"
                         : "badge-success"
-                    }`}
+                      }`}
                   >
                     {order.order_status}
                   </span>

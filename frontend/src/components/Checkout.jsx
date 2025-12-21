@@ -1,72 +1,54 @@
 import { useEffect, useState } from "react";
 import { formatINR } from "./Utils/INR";
-import { useNavigate } from "react-router-dom";
+import { useNavigate,useLocation } from "react-router-dom";
 import { startPayment } from "./Utils/Payment";
+import { isLoggedIn } from "./Utils/IsLoggedIn";
 
 export default function Checkout() {
-
-
+  const API_URL = import.meta.env.VITE_API_URL;
 
   const [cart, setCart] = useState([]);
+  const [loading, setLoading] = useState(true); // ✅ page loading state
+  const [showModal, setShowModal] = useState(false); // For payment selection modal
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const GST_PERCENT = 5;
+
+  useEffect(() => {
+    if (!isLoggedIn()) {
+      navigate("/auth");
+      return;
+    }
+
+    if (!location.state?.fromCart) {
+      navigate("/cart", { replace: true });
+    }
+  }, []);
+
 
   useEffect(() => {
     async function fetchCart() {
       const token = localStorage.getItem("access_token");
 
-      const res = await fetch(`${API_URL}/cart/get-cart`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      try {
+        const res = await fetch(`${API_URL}/cart/get-cart`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-      const result = await res.json();
-      if (result.success) {
-        setCart(result.data);
+        const result = await res.json();
+        if (result.success) {
+          setCart(result.data);
+        }
+      } finally {
+        setLoading(false); // stop loading after fetch
       }
     }
 
     fetchCart();
   }, []);
-
-
-  const API_URL = import.meta.env.VITE_API_URL;
-
-  // const [user, setUser] = useState(null);
-  // useEffect(() => {
-  //   const token = localStorage.getItem("access_token");
-
-  //   if (!token) {
-  //     setUser(null);
-  //     return;
-  //   }
-
-  //   const fetchUser = async () => {
-  //     try {
-  //       const res = await fetch(`${API_URL}/auth/me`, {
-  //         headers: {
-  //           Authorization: `Bearer ${token}`, // ✅ FIXED
-  //         },
-  //       });
-
-  //       if (!res.ok) {
-  //         throw new Error("Unauthorized");
-  //       }
-
-  //       const data = await res.json();
-  //       setUser(data.user);
-  //     } catch (err) {
-  //       localStorage.removeItem("access_token");
-  //       setUser(null);
-  //     }
-  //   };
-
-  //   fetchUser();
-  // }, []);
-
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [showModal, setShowModal] = useState(false); // For payment selection modal
-  const GST_PERCENT = 5;
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
   const gstAmount = (subtotal * GST_PERCENT) / 100;
@@ -79,11 +61,9 @@ export default function Checkout() {
       setLoading(true);
       startPayment(navigate, setLoading);
     } else if (method === "cod") {
-      // Cash on delivery
-      handleCod()
+      handleCod();
     }
   };
-
 
   async function handleCod() {
     try {
@@ -94,17 +74,14 @@ export default function Checkout() {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${access_token}`,
-        }
+        },
       });
 
-      const data =await Res.json()
-
-      console.log(data);
-      
+      const data = await Res.json();
 
       if (!data.success) {
         alert("Failed to create order");
-        setLoading(false); // 🔹 reset on failure
+        setLoading(false);
         return;
       }
 
@@ -112,15 +89,23 @@ export default function Checkout() {
       const amount = bill.grandTotal;
 
       navigate("/payment-success", {
-        state: { orderNumber: orderId, amount: amount.toFixed(2), mode:"cod" },
+        state: { orderNumber: orderId, amount: amount.toFixed(2), mode: "cod" },
       });
-
     } catch (err) {
       console.error(err);
       alert("Verification error");
     } finally {
-      setLoading(false); // ✅ stop loading after success or verification fail
+      setLoading(false);
     }
+  }
+
+  // ✅ Full-page spinner while initial page is loading
+  if (loading && cart.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-base-200">
+        <span className="loading loading-spinner loading-xl"></span>
+      </div>
+    );
   }
 
   return (

@@ -59,11 +59,11 @@ export default function Navbar() {
       });
   }, []);
 
-useEffect(() => {
-  if (user) {
-    fetchCartCount();
-  }
-}, [user]);
+  useEffect(() => {
+    if (user) {
+      fetchCartCount();
+    }
+  }, [user]);
 
 
   /* ---------------- SEARCH (DEBOUNCE) ---------------- */
@@ -92,32 +92,38 @@ useEffect(() => {
     return () => clearTimeout(timer);
   }, [search]);
 
- const fetchCartCount = async () => {
-  try {
-    const token = localStorage.getItem("access_token");
+  const fetchCartCount = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
 
-    const res = await fetch(`${API_URL}/cart/get-cart`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+      const res = await fetch(`${API_URL}/cart/get-cart`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (data.success && Array.isArray(data.data)) {
-      // ✅ total quantity (1 dosa + 2 juice = 3)
-      const totalQty = data.data.reduce(
-        (sum, item) => sum + item.qty,
-        0
-      );
-
-      setCartCount(totalQty);
+      if (data.success && Array.isArray(data.data)) {
+        // ✅ total number of items in cart (not sum of qty)
+        const totalItems = data.data.length;
+        setCartCount(totalItems);
+      }
+    } catch (err) {
+      console.error("Failed to fetch cart", err);
+      setCartCount(0);
     }
-  } catch (err) {
-    console.error("Failed to fetch cart", err);
-    setCartCount(0);
-  }
-};
+  };
+
+
+
+  useEffect(() => {
+    const handleCartUpdate = () => fetchCartCount();
+
+    window.addEventListener("cartUpdated", handleCartUpdate);
+    return () => window.removeEventListener("cartUpdated", handleCartUpdate);
+  }, []);
+
 
 
 
@@ -125,6 +131,7 @@ useEffect(() => {
     localStorage.removeItem("access_token");
     setUser(null);
     setOpenMenu(null);
+    navigate("/")
   };
 
   return (
@@ -233,65 +240,65 @@ useEffect(() => {
           </div>
 
           {/* SEARCH ICON */}
-         <button
-  onClick={() => {
-    if (window.innerWidth < 640) {
-      setMobileSearch(true);
-    } else {
-      setShowSearch(!showSearch);
-    }
-  }}
-  className="btn btn-ghost btn-circle text-amber-400"
->
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="h-5 w-5"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth="2"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1010.5 18a7.5 7.5 0 006.15-3.35z"
-    />
-  </svg>
-</button>
+          <button
+            onClick={() => {
+              if (window.innerWidth < 640) {
+                setMobileSearch(true);
+              } else {
+                setShowSearch(!showSearch);
+              }
+            }}
+            className="btn btn-ghost btn-circle text-amber-400"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1010.5 18a7.5 7.5 0 006.15-3.35z"
+              />
+            </svg>
+          </button>
 
 
           {/* CART */}
-        <button
-  onClick={() => navigate("/cart")}
-  className="btn btn-ghost btn-circle relative text-amber-400"
->
-  {/* Cart Icon */}
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="h-6 w-6"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth="2"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 6m12-6l2 6M9 21a1 1 0 100-2 1 1 0 000 2zm8 0a1 1 0 100-2 1 1 0 000 2z"
-    />
-  </svg>
+          <button
+            onClick={() => navigate("/cart")}
+            className="btn btn-ghost btn-circle relative text-amber-400"
+          >
+            {/* Cart Icon */}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 6m12-6l2 6M9 21a1 1 0 100-2 1 1 0 000 2zm8 0a1 1 0 100-2 1 1 0 000 2z"
+              />
+            </svg>
 
-  {/* 🔴 Circular Notification Badge */}
-  {cartCount > 0 && (
-    <span className="
+            {/* 🔴 Circular Notification Badge */}
+            {cartCount > 0 && (
+              <span className="
       badge badge-error badge-circle badge-sm
       absolute -top-1 -right-1
       text-xs font-bold
     ">
-      {cartCount}
-    </span>
-  )}
-</button>
+                {cartCount}
+              </span>
+            )}
+          </button>
 
 
 
@@ -300,27 +307,27 @@ useEffect(() => {
           {/* PROFILE */}
           <div className="relative">
             <button
-  onClick={() =>
-    setOpenMenu(openMenu === "profile" ? null : "profile")
-  }
-  className="btn btn-ghost btn-circle text-amber-400"
->
-  {/* User Icon */}
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="h-5 w-5"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth="2"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M15 7a3 3 0 11-6 0 3 3 0 016 0zM4 21a8 8 0 0116 0"
-    />
-  </svg>
-</button>
+              onClick={() =>
+                setOpenMenu(openMenu === "profile" ? null : "profile")
+              }
+              className="btn btn-ghost btn-circle text-amber-400"
+            >
+              {/* User Icon */}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15 7a3 3 0 11-6 0 3 3 0 016 0zM4 21a8 8 0 0116 0"
+                />
+              </svg>
+            </button>
 
 
             {openMenu === "profile" && (

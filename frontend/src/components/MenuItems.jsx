@@ -1,165 +1,135 @@
 import { useState, useEffect } from "react";
 import { formatINR } from "./Utils/INR";
-import sampleimg from '../assets/sample.avif'
-
+import sampleimg from '../assets/sample.avif';
+import { isLoggedIn } from "./Utils/IsLoggedIn";
+import { useNavigate } from "react-router-dom";
+import Toast from "./Utils/Toast";
 export default function MenuPage() {
 
   const API_URL = import.meta.env.VITE_API_URL;
+  const navigate = useNavigate();
 
-  const [categories, setCategories] = useState([])
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch(`${API_URL}/menu/get-categories`);
-
-        if (!res.ok) {
-          throw new Error("Failed to fetch categories");
-        }
-        const result = await res.json();
-        setCategories(result.data); // 👈 because backend sends { success, data }
-
-      } catch (err) {
-        alert(err)
-      }
-    };
-
-    fetchCategories();
-  }, []);
-
-
-  useEffect(() => {
-    const fetchMenuItems = async () => {
-      try {
-        const res = await fetch(`${API_URL}/menu/get-menu-items`);
-
-        if (!res.ok) {
-          throw new Error("Failed to fetch menu items");
-        }
-        const result = await res.json();
-        setMenuItems(result.data); // 👈 because backend sends { success, data }
-
-      } catch (err) {
-        alert(err)
-      }
-    };
-
-    fetchMenuItems();
-  }, []);
-
-
-  // const menuItems = [
-  //   { id: 1, name: "Chicken Wings", category: "Starters", price: 5.99, img: sampleimg },
-  //   { id: 2, name: "Paneer Tikka", category: "Starters", price: 4.99, img: sampleimg },
-  //   { id: 3, name: "Grilled Salmon", category: "Main Course", price: 12.99, img: sampleimg },
-  //   { id: 4, name: "Veg Biryani", category: "Main Course", price: 9.99, img: sampleimg },
-  //   { id: 5, name: "Chocolate Lava Cake", category: "Desserts", price: 6.99, img: sampleimg },
-  //   { id: 6, name: "Ice Cream Sundae", category: "Desserts", price: 4.99, img: sampleimg },
-  //   { id: 7, name: "Coke", category: "Beverages", price: 1.99, img: sampleimg },
-  //   { id: 8, name: "Fresh Juice", category: "Beverages", price: 2.99, img: sampleimg },
-  //   { id: 9, name: "Paneer Tikka", category: "Starters", price: 4.99, img: sampleimg },
-  // ];
-
-  const [menuItems, setMenuItems] = useState([])
-
+  const [categories, setCategories] = useState([]);
+  const [menuItems, setMenuItems] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("Lunch");
-
-  // const [cart, setCart] = useState(() => {
-  //   const savedCart = localStorage.getItem("cart");
-  //   return savedCart ? JSON.parse(savedCart) : [];
-  // });
-
-  // const addToCart = (item) => {
-  //   setCart((prev) => {
-  //     const exist = prev.find((i) => i.id === item.id);
-  //     if (exist) {
-  //       return prev.map((i) => i.id === item.id ? { ...i, qty: i.qty + 1 } : i);
-  //     } else {
-  //       return [...prev, { ...item, qty: 1 }];
-  //     }
-  //   });
-  // };
-
-  // const removeFromCart = (id) => {
-  //   setCart((prev) => prev.filter((item) => item.id !== id));
-  // };
-
-
-
   const [cart, setCart] = useState([]);
-  const [loading,setLoading] = useState(null);
+  const [loadingCart, setLoadingCart] = useState(null); // for add/remove
+  const [loadingData, setLoadingData] = useState(true); // for initial fetch
 
+  const [toast, setToast] = useState({
+    show: false,
+    nature: "info",
+    content: "",
+  });
+
+
+  /* ---------------- FETCH CATEGORIES & MENU ITEMS ---------------- */
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoadingData(true);
+      try {
+        const [catRes, menuRes] = await Promise.all([
+          fetch(`${API_URL}/menu/get-categories`),
+          fetch(`${API_URL}/menu/get-menu-items`)
+        ]);
+
+        if (!catRes.ok || !menuRes.ok) throw new Error("Failed to fetch data");
+
+        const cartResult = await catRes.json();
+        const menuResult = await menuRes.json();
+
+        setCategories(cartResult.data);
+        setMenuItems(menuResult.data);
+      } catch (err) {
+        alert(err);
+      } finally {
+        setLoadingData(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  /* ---------------- FETCH CART ---------------- */
   useEffect(() => {
     async function fetchCart() {
       const token = localStorage.getItem("access_token");
-
-      const res = await fetch(`${API_URL}/cart/get-cart`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const result = await res.json();
-      if (result.success) {
-        setCart(result.data);
+      if(!token)return
+      try {
+        const res = await fetch(`${API_URL}/cart/get-cart`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const result = await res.json();
+        if (result.success) setCart(result.data);
+      } catch (err) {
+        console.error(err);
       }
     }
 
     fetchCart();
   }, []);
 
-
-
+  /* ---------------- ADD TO CART ---------------- */
   const addToCart = async (item) => {
-    const token = localStorage.getItem("access_token");
-    setLoading(item.id);
-    try{
-      await fetch(`${API_URL}/cart/add-to-cart`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        item_id: item.id,
-        price: item.price,
-      }),
-    });
-
-    // refresh cart
-    const res = await fetch(`${API_URL}/cart/get-cart`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const result = await res.json();
-    setCart(result.data);
-    } finally{
-      setLoading(null);
+    if (!isLoggedIn()) {
+      setToast({
+        show:true,
+        nature:"info",
+        content:"Please Login to Continue"
+      })
+      return
     }
-    
+    const token = localStorage.getItem("access_token");
+    setLoadingCart(item.id);
+    try {
+      await fetch(`${API_URL}/cart/add-to-cart`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ item_id: item.id, price: item.price }),
+      });
+
+      // refresh cart
+      const res = await fetch(`${API_URL}/cart/get-cart`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const result = await res.json();
+      setCart(result.data);
+      window.dispatchEvent(new Event("cartUpdated"));
+    } finally {
+      setLoadingCart(null);
+    }
   };
 
-
-
+  /* ---------------- REMOVE FROM CART ---------------- */
   const removeFromCart = async (id) => {
     const token = localStorage.getItem("access_token");
-    setLoading(id);
-    try{
+    setLoadingCart(id);
+    try {
       await fetch(`${API_URL}/cart/remove-from-cart/${id}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    setCart((prev) => prev.filter((item) => item.id !== id));
-    }
-    finally{
-      setLoading(null);
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setCart((prev) => prev.filter((item) => item.id !== id));
+      window.dispatchEvent(new Event("cartUpdated"));
+    } finally {
+      setLoadingCart(null);
     }
   };
 
-
+  /* ---------------- TOTAL ---------------- */
   const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+
+  /* ---------------- RENDER ---------------- */
+  if (loadingData) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <span className="loading loading-spinner loading-lg"></span>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-100 min-h-screen">
@@ -189,13 +159,13 @@ export default function MenuPage() {
                 <div
                   key={item.id}
                   className="bg-white rounded-2xl border border-gray-200 shadow-md 
-               hover:shadow-xl hover:-translate-y-1 transition-all duration-300 
-               h-[400px] flex flex-col overflow-hidden"
+                             hover:shadow-xl hover:-translate-y-1 transition-all duration-300 
+                             h-[400px] flex flex-col overflow-hidden"
                 >
                   {/* IMAGE */}
                   <figure className="h-[60%] overflow-hidden">
                     <img
-                      src={item.image_url}
+                      src={item.image_url || sampleimg}
                       alt={item.name}
                       className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
                     />
@@ -206,17 +176,9 @@ export default function MenuPage() {
 
                     {/* Name + Description + Price */}
                     <div className="space-y-1">
-                      <h2 className="text-lg font-bold text-gray-800">
-                        {item.name}
-                      </h2>
-
-                      <p className="text-sm text-gray-500 italic line-clamp-2">
-                        {item.description}
-                      </p>
-
-                      <p className="text-lg font-semibold text-primary mt-1">
-                        {formatINR(item.price.toFixed(2))}
-                      </p>
+                      <h2 className="text-lg font-bold text-gray-800">{item.name}</h2>
+                      <p className="text-sm text-gray-500 italic line-clamp-2">{item.description}</p>
+                      <p className="text-lg font-semibold text-primary mt-1">{formatINR(item.price.toFixed(2))}</p>
                     </div>
 
                     {/* ACTIONS */}
@@ -224,29 +186,35 @@ export default function MenuPage() {
                       {cartItem ? (
                         <button
                           onClick={() => removeFromCart(item.id)}
-                          className="btn btn-outline btn-error btn-sm w-full"
-                          disabled={loading===item.id}
+                          className="btn btn-outline btn-error btn-sm w-full flex items-center justify-center"
+                          disabled={loadingCart === item.id}
                         >
-                          {loading===item.id ? <span className="loading loading-spinner loading-xs text-black"></span> : " REMOVE FROM CART"}
+                          {loadingCart === item.id ? <span className="loading loading-spinner loading-sm"></span> : "REMOVE FROM CART"}
                         </button>
                       ) : (
                         <button
                           onClick={() => addToCart(item)}
-                          className="btn btn-warning btn-sm w-full"
-                          disabled={loading===item.id}
+                          className="btn btn-warning btn-sm w-full flex items-center justify-center"
+                          disabled={loadingCart === item.id}
                         >
-                         {loading===item.id ? <span className="loading loading-spinner loading-xs text-black"></span> : " ADD TO CART"}
-                         
+                          {loadingCart === item.id ? <span className="loading loading-spinner loading-sm"></span> : "ADD TO CART"}
                         </button>
                       )}
                     </div>
+
                   </div>
                 </div>
               );
-
             })}
         </div>
       </div>
+      <Toast
+        show={toast.show}
+        nature={toast.nature}
+        content={toast.content}
+        onClose={() => setToast({ ...toast, show: false })}
+      />
+
     </div>
   );
 }

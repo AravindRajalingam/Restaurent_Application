@@ -43,7 +43,7 @@ export async function startPayment(navigate, setLoading) {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${access_token}`,
+              Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({
               razorpay_order_id: response.razorpay_order_id,

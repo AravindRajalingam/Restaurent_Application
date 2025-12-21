@@ -86,7 +86,7 @@
 //         setResMessage(result.message || "Signin successful");
 //         // optionally, store token in localStorage or context
 
-        
+
 //       }
 //     } catch (err) {
 //       setErrorMessage("Network error. Please try again.");
@@ -254,6 +254,8 @@ export default function Authentication() {
       } else {
         setResMessage(result.message || "Signin successful");
         localStorage.setItem("access_token", result.access_token);
+        localStorage.setItem("refresh_token", result.refresh_token);
+        localStorage.setItem("token_expiry", Date.now() + result.token_expiry * 1000); // optional
         navigate("/");
       }
     } catch (err) {
@@ -263,231 +265,231 @@ export default function Authentication() {
     }
   };
 
- return (
-  <div
-    className="min-h-screen flex items-center justify-center bg-cover bg-center relative"
-    style={{
-      backgroundImage:
-        "url('https://images.unsplash.com/photo-1600891964599-f61ba0e24092')",
-    }}
-  >
-    {/* Dark overlay */}
-    <div className="absolute inset-0 bg-black/60"></div>
+  return (
+    <div
+      className="min-h-screen flex items-center justify-center bg-cover bg-center relative"
+      style={{
+        backgroundImage:
+          "url('https://images.unsplash.com/photo-1600891964599-f61ba0e24092')",
+      }}
+    >
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-black/60"></div>
 
-    {/* Auth Card */}
-    <div className="relative w-full max-w-4xl mx-4 grid md:grid-cols-2 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-xl bg-white/10 border border-white/20">
+      {/* Auth Card */}
+      <div className="relative w-full max-w-4xl mx-4 grid md:grid-cols-2 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-xl bg-white/10 border border-white/20">
 
-      {/* LEFT BRAND */}
-     <div
-  className="hidden md:flex flex-col justify-center items-center text-center p-10 text-white relative bg-cover bg-center"
-  style={{
-    backgroundImage:
-      "url('https://images.unsplash.com/photo-1552566626-52f8b828add9')",
-  }}
->
-  {/* Dark blue overlay */}
-  <div className="absolute inset-0 bg-[#0a2540]/85"></div>
+        {/* LEFT BRAND */}
+        <div
+          className="hidden md:flex flex-col justify-center items-center text-center p-10 text-white relative bg-cover bg-center"
+          style={{
+            backgroundImage:
+              "url('https://images.unsplash.com/photo-1552566626-52f8b828add9')",
+          }}
+        >
+          {/* Dark blue overlay */}
+          <div className="absolute inset-0 bg-[#0a2540]/85"></div>
 
-  {/* Content */}
-  <div className="relative z-10">
-    <h1 className="text-4xl font-extrabold tracking-wide mb-4">
-      Mu Family Restaurant
-    </h1>
+          {/* Content */}
+          <div className="relative z-10">
+            <h1 className="text-4xl font-extrabold tracking-wide mb-4">
+              Mu Family Restaurant
+            </h1>
 
-    <p className="text-sm text-blue-200 leading-relaxed max-w-xs">
-      Delicious food, seamless ordering, and an unforgettable dining experience.
-    </p>
+            <p className="text-sm text-blue-200 leading-relaxed max-w-xs">
+              Delicious food, seamless ordering, and an unforgettable dining experience.
+            </p>
 
-    <div className="mt-6 inline-block px-4 py-1 rounded-full border border-blue-300 text-blue-200 text-sm tracking-wide">
-      Since 2024
-    </div>
-  </div>
-</div>
-
-
-
-      {/* RIGHT FORM */}
-      <div className="card-body bg-base-100/90">
-
-        {/* Tabs */}
-        <div className="tabs tabs-boxed justify-center mb-6">
-          <a
-            className={`tab ${!showSignupForm ? "tab-active" : ""}`}
-            onClick={() => setShowSignupForm(false)}
-          >
-            Sign In
-          </a>
-          <a
-            className={`tab ${showSignupForm ? "tab-active" : ""}`}
-            onClick={() => setShowSignupForm(true)}
-          >
-            Sign Up
-          </a>
+            <div className="mt-6 inline-block px-4 py-1 rounded-full border border-blue-300 text-blue-200 text-sm tracking-wide">
+              Since 2024
+            </div>
+          </div>
         </div>
 
-        {/* SIGN IN */}
-        {!showSignupForm && (
-          <>
-            <h2 className="text-2xl font-bold text-center mb-4">
-              Welcome Back 
-            </h2>
 
-            <form onSubmit={handleSignin} className="space-y-4">
 
-              <input
-                type="email"
-                name="email"
-                placeholder="Email"
-                className="input input-bordered w-full"
-                required
-              />
+        {/* RIGHT FORM */}
+        <div className="card-body bg-base-100/90">
 
-              <input
-                type="password"
-                name="password"
-                placeholder="Password"
-                className="input input-bordered w-full"
-                required
-              />
+          {/* Tabs */}
+          <div className="tabs tabs-boxed justify-center mb-6">
+            <a
+              className={`tab ${!showSignupForm ? "tab-active" : ""}`}
+              onClick={() => setShowSignupForm(false)}
+            >
+              Sign In
+            </a>
+            <a
+              className={`tab ${showSignupForm ? "tab-active" : ""}`}
+              onClick={() => setShowSignupForm(true)}
+            >
+              Sign Up
+            </a>
+          </div>
 
-              {errorMessage && (
-                <div className="alert alert-error text-sm">
-                  {errorMessage}
-                </div>
-              )}
+          {/* SIGN IN */}
+          {!showSignupForm && (
+            <>
+              <h2 className="text-2xl font-bold text-center mb-4">
+                Welcome Back
+              </h2>
 
-              {resMessage && (
-                <div className="alert alert-success text-sm">
-                  {resMessage}
-                </div>
-              )}
+              <form onSubmit={handleSignin} className="space-y-4">
 
-              <button
-                type="submit"
-                className="btn btn-primary w-full"
-                disabled={loading}
-              >
-                {loading && <span className="loading loading-spinner"></span>}
-                Sign In
-              </button>
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Email"
+                  className="input input-bordered w-full"
+                  required
+                />
 
-            </form>
-          </>
-        )}
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  className="input input-bordered w-full"
+                  required
+                />
 
-        {/* SIGN UP */}
-        {showSignupForm && (
-          <>
-            <h2 className="text-2xl font-bold text-center mb-4">
-              Create Your Account 
-            </h2>
+                {errorMessage && (
+                  <div className="alert alert-error text-sm">
+                    {errorMessage}
+                  </div>
+                )}
 
-            <form onSubmit={handleSignup} className="space-y-4">
+                {resMessage && (
+                  <div className="alert alert-success text-sm">
+                    {resMessage}
+                  </div>
+                )}
 
-              <input
-                type="email"
-                name="email"
-                placeholder="Email"
-                className="input input-bordered w-full"
-                required
-              />
+                <button
+                  type="submit"
+                  className="btn btn-primary w-full"
+                  disabled={loading}
+                >
+                  {loading && <span className="loading loading-spinner"></span>}
+                  Sign In
+                </button>
 
-              <input
-                type="password"
-                name="password"
-                placeholder="Password"
-                className="input input-bordered w-full"
-                required
-              />
+              </form>
+            </>
+          )}
 
-              <input
-                type="text"
-                name="name"
-                placeholder="Full Name"
-                className="input input-bordered w-full"
-              />
+          {/* SIGN UP */}
+          {showSignupForm && (
+            <>
+              <h2 className="text-2xl font-bold text-center mb-4">
+                Create Your Account
+              </h2>
 
-              <input
-                type="number"
-                name="mobile"
-                placeholder="Mobile Number"
-                className="input input-bordered w-full"
-                required
-              />
+              <form onSubmit={handleSignup} className="space-y-4">
 
-              <select
-                name="state"
-                value={selectedState}
-                onChange={handleStateChange}
-                className="select select-bordered w-full"
-                required
-              >
-                <option value="">Select State</option>
-                {states.map((state) => (
-                  <option key={state.name} value={state.name}>
-                    {state.name}
-                  </option>
-                ))}
-              </select>
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Email"
+                  className="input input-bordered w-full"
+                  required
+                />
 
-              <select
-                name="city"
-                className="select select-bordered w-full"
-                disabled={!selectedState}
-                required
-              >
-                <option value="">Select City</option>
-                {cities.map((city) => (
-                  <option key={city} value={city}>
-                    {city}
-                  </option>
-                ))}
-              </select>
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  className="input input-bordered w-full"
+                  required
+                />
 
-              <input
-                type="text"
-                name="address"
-                placeholder="Address"
-                className="input input-bordered w-full"
-                required
-              />
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="Full Name"
+                  className="input input-bordered w-full"
+                />
 
-              <input
-                type="number"
-                name="pincode"
-                placeholder="Pincode"
-                className="input input-bordered w-full"
-                required
-              />
+                <input
+                  type="number"
+                  name="mobile"
+                  placeholder="Mobile Number"
+                  className="input input-bordered w-full"
+                  required
+                />
 
-              {errorMessage && (
-                <div className="alert alert-error text-sm">
-                  {errorMessage}
-                </div>
-              )}
+                <select
+                  name="state"
+                  value={selectedState}
+                  onChange={handleStateChange}
+                  className="select select-bordered w-full"
+                  required
+                >
+                  <option value="">Select State</option>
+                  {states.map((state) => (
+                    <option key={state.name} value={state.name}>
+                      {state.name}
+                    </option>
+                  ))}
+                </select>
 
-              {resMessage && (
-                <div className="alert alert-success text-sm">
-                  {resMessage}
-                </div>
-              )}
+                <select
+                  name="city"
+                  className="select select-bordered w-full"
+                  disabled={!selectedState}
+                  required
+                >
+                  <option value="">Select City</option>
+                  {cities.map((city) => (
+                    <option key={city} value={city}>
+                      {city}
+                    </option>
+                  ))}
+                </select>
 
-              <button
-                type="submit"
-                className="btn btn-primary w-full"
-                disabled={loading}
-              >
-                {loading && <span className="loading loading-spinner"></span>}
-                Sign Up
-              </button>
+                <input
+                  type="text"
+                  name="address"
+                  placeholder="Address"
+                  className="input input-bordered w-full"
+                  required
+                />
 
-            </form>
-          </>
-        )}
+                <input
+                  type="number"
+                  name="pincode"
+                  placeholder="Pincode"
+                  className="input input-bordered w-full"
+                  required
+                />
 
+                {errorMessage && (
+                  <div className="alert alert-error text-sm">
+                    {errorMessage}
+                  </div>
+                )}
+
+                {resMessage && (
+                  <div className="alert alert-success text-sm">
+                    {resMessage}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  className="btn btn-primary w-full"
+                  disabled={loading}
+                >
+                  {loading && <span className="loading loading-spinner"></span>}
+                  Sign Up
+                </button>
+
+              </form>
+            </>
+          )}
+
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
 
 }

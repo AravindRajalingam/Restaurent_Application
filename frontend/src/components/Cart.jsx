@@ -150,7 +150,7 @@ export default function Cart() {
             Your Cart
           </h2>
 
-          <div className="divider"></div>
+          <div className="divider divider-primary"></div>
 
           {cart.length === 0 ? (
             <div className="flex flex-col items-center py-12 gap-4">

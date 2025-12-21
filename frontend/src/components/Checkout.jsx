@@ -213,17 +213,17 @@ export default function Checkout() {
             Checkout
           </h2>
 
-          <div className="divider"></div>
+          <div className="divider divider-primary"></div>
 
           {/* ORDER TABLE */}
           <div className="overflow-x-auto">
             <table className="table table-zebra w-full">
               <thead>
                 <tr>
-                  <th>Item</th>
-                  <th className="text-right">Price</th>
-                  <th className="text-center">Qty</th>
-                  <th className="text-right">Subtotal</th>
+                  <th className="text-black">Item</th>
+                  <th className="text-right text-black">Price</th>
+                  <th className="text-center text-black">Qty</th>
+                  <th className="text-right text-black">Subtotal</th>
                 </tr>
               </thead>
               <tbody>
@@ -251,26 +251,44 @@ export default function Checkout() {
           </div>
 
           {/* DELIVERY LOCATION */}
-          <div className="mt-6 p-4 border rounded-xl">
-            <h3 className="font-semibold mb-3">📦 Delivery Location</h3>
+          <div className="mt-6 p-4 border-2 border-primary rounded-xl">
+            <div className="flex gap-2 ">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width={15}
+                height={20}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke={"purple"}
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+              <h3 className="font-semibold mb-3 text-primary">
+                Delivery Location
+              </h3>
+            </div>
 
             <div className="flex gap-2 mb-3 flex-wrap">
               <button
-                className="btn btn-xs btn-outline"
+                className="btn btn-xs btn-outline btn-primary"
                 onClick={useSavedAddress}
               >
                 Saved Address
               </button>
 
               <button
-                className="btn btn-xs btn-outline"
+                className="btn btn-xs btn-outline btn-primary"
                 onClick={detectCurrentLocation}
               >
                 {detecting ? "Detecting..." : "Current Location"}
               </button>
 
               <button
-                className="btn btn-xs btn-outline"
+                className="btn btn-xs btn-outline btn-primary"
                 onClick={openMapPicker}
               >
                 Google Map
@@ -278,7 +296,7 @@ export default function Checkout() {
             </div>
 
             <textarea
-              className="textarea textarea-bordered w-full text-sm"
+              className="textarea textarea-bordered border-2 w-full text-sm border-primary"
               rows="3"
               placeholder="Enter delivery address"
               value={deliveryAddress}

@@ -14,6 +14,7 @@ import AddMenuItem from './components/Admin/AddMenuItem.jsx';
 import SelectedItems from './components/SelectedItems.jsx';
 import { useEffect } from 'react';
 import { getAccessToken } from './components/Utils/getAccessToken.jsx';
+import AllOrders from './components/Admin/AllOrders.jsx';
 function App() {
 
   const API_URL = import.meta.env.VITE_API_URL;
@@ -81,6 +82,7 @@ function App() {
             <Route path="/my-orders" element={<Myorders />} />
             <Route path="/add" element={<AddMenuItem />} />
             <Route path='/item/:item_id' element={<SelectedItems />} />
+            <Route path='/all-orders' element={<AllOrders />} />
 
           </Route>
 

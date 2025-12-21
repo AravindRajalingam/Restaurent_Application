@@ -60,12 +60,16 @@ export const fetchAllOrders = async (req, res) => {
         id,
         created_at,
         payment_status,
-        order_status,
         mode,
         total_amount,
         gst_amount,
         grand_total,
         deliveryAddress,
+        order_status_logs (
+          id,
+          status,
+          updated_at
+        ),
         profiles (
           id,
           name,
@@ -99,32 +103,34 @@ export const fetchAllOrders = async (req, res) => {
       });
     }
 
-    /* ---------- SHAPE RESPONSE ---------- */
-    const shapedOrders = data.map(order => ({
-      order: {
-        orderId: order.id,
-        createdAt: order.created_at,
-        paymentStatus: order.payment_status,
-        orderStatus: order.order_status,
-        paymentMode: order.mode,
-        totals: {
-          subtotal: order.total_amount,
-          gst: order.gst_amount,
-          grandTotal: order.grand_total,
+    // Shape response
+    const shapedOrders = data.map(order => {
+      return {
+        order: {
+          orderId: order.id,
+          createdAt: order.created_at,
+          paymentStatus: order.payment_status,
+          paymentMode: order.mode,
+          totals: {
+            subtotal: order.total_amount,
+            gst: order.gst_amount,
+            grandTotal: order.grand_total,
+          },
+          deliveryAddress: order.deliveryAddress,
+          status: order.order_status_logs[0], // single object
         },
-        deliveryAddress: order.deliveryAddress,
-      },
-      user: order.profiles,
-      items: order.order_items.map(item => ({
-        quantity: item.quantity,
-        itemId: item.menu_items.id,
-        name: item.menu_items.name,
-        price: item.menu_items.price,
-        image: item.menu_items.image_url,
-        category: item.menu_items.categories?.name || null,
-        itemTotal: item.menu_items.price * item.quantity,
-      })),
-    }));
+        user: order.profiles,
+        items: order.order_items.map(item => ({
+          quantity: item.quantity,
+          itemId: item.menu_items.id,
+          name: item.menu_items.name,
+          price: item.menu_items.price,
+          image: item.menu_items.image_url,
+          category: item.menu_items.categories?.name || null,
+          itemTotal: item.menu_items.price * item.quantity,
+        })),
+      };
+    });
 
     return res.status(200).json({
       success: true,
@@ -140,3 +146,57 @@ export const fetchAllOrders = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
+export const updateStatus = async (req, res) => {
+  try {
+    const { orderId, status } = req.body;    
+
+    if (!orderId) {
+      return res.status(400).json({
+        success: false,
+        message: "orderId and status are required",
+      });
+    }
+
+    // Update order status in Supabase
+    const { data, error } = await supabase
+      .from("order_status_logs")
+      .update({ status: status })
+      .eq("order_id", orderId)
+      .select();
+
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to update order status",
+        error: error.message,
+      });
+    }
+
+    if (!data || data.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: `Order status updated to ${status}`,
+      data: data[0],
+    });
+  } catch (err) {
+    console.error("Update order status error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+}
+
+

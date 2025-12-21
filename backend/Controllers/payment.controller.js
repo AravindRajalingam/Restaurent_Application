@@ -77,7 +77,6 @@ export const createPaymentOrder = async (req, res) => {
         grand_total: grandTotal,
         mode: "online",
         payment_status: "Pending",
-        order_status: "Placed",
         deliveryAddress: req.body.deliveryAddress
       })
       .select()
@@ -314,7 +313,6 @@ export const cashOnDelivery = async (req, res) => {
         grand_total: grandTotal,
         mode: "cod",
         payment_status: "Pending",
-        order_status: "Placed",
         deliveryAddress:req.body.deliveryAddress
       })
       .select()

@@ -1,64 +1,8 @@
 import { supabase } from '../Config/supabaseClient.js'
 
-/**
- * PLACE ORDER - CASH ON DELIVERY
- */
-// export const placeOrder = async (req, res) => {
-//   const { items, total, gst, grandTotal } = req.body
 
-//   if (!items || items.length === 0) {
-//     return res.status(400).json({ message: 'Cart is empty' })
-//   }
 
-//   // 1️⃣ Create order (COD)
-//   const { data: order, error } = await supabase
-//     .from('orders')
-//     .insert({
-//       user_id: req.user.id,
-//       total_amount: total,
-//       gst_amount: gst,
-//       grand_total: grandTotal,
-//       payment_status: 'COD',
-//       order_status: 'Placed'
-//     })
-//     .select()
-//     .single()
-
-//   if (error) {
-//     return res.status(400).json(error)
-//   }
-
-//   // 2️⃣ Insert ordered items
-//   const orderItems = items.map(i => ({
-//     order_id: order.id,
-//     item_id: i.id,
-//     quantity: i.quantity,
-//     price: i.price
-//   }))
-
-//   const { error: itemsError } = await supabase
-//     .from('order_items')
-//     .insert(orderItems)
-
-//   if (itemsError) {
-//     return res.status(400).json(itemsError)
-//   }
-
-//   // 3️⃣ Initial status log
-//   await supabase.from('order_status_logs').insert({
-//     order_id: order.id,
-//     status: 'Placed'
-//   })
-
-//   res.json({
-//     message: 'Order placed successfully (Cash on Delivery)',
-//     orderId: order.id
-//   })
-// }
-
-/**
- * USER ORDER HISTORY
- */
+//user
 
 export const myOrders = async (req, res) => {
   try {
@@ -89,9 +33,8 @@ export const myOrders = async (req, res) => {
 };
 
 
-/**
- * LIVE ORDER STATUS
- */
+//user
+
 export const orderStatus = async (req, res) => {
   const { orderId } = req.params
 
@@ -105,3 +48,95 @@ export const orderStatus = async (req, res) => {
 
   res.json(data)
 }
+
+
+// admin
+
+export const fetchAllOrders = async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from("orders")
+      .select(`
+        id,
+        created_at,
+        payment_status,
+        order_status,
+        mode,
+        total_amount,
+        gst_amount,
+        grand_total,
+        deliveryAddress,
+        profiles (
+          id,
+          name,
+          phone,
+          address_line,
+          city,
+          state,
+          pincode
+        ),
+        order_items (
+          quantity,
+          menu_items (
+            id,
+            name,
+            price,
+            image_url,
+            categories (
+              id,
+              name
+            )
+          )
+        )
+      `)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to fetch orders",
+        error: error.message,
+      });
+    }
+
+    /* ---------- SHAPE RESPONSE ---------- */
+    const shapedOrders = data.map(order => ({
+      order: {
+        orderId: order.id,
+        createdAt: order.created_at,
+        paymentStatus: order.payment_status,
+        orderStatus: order.order_status,
+        paymentMode: order.mode,
+        totals: {
+          subtotal: order.total_amount,
+          gst: order.gst_amount,
+          grandTotal: order.grand_total,
+        },
+        deliveryAddress: order.deliveryAddress,
+      },
+      user: order.profiles,
+      items: order.order_items.map(item => ({
+        quantity: item.quantity,
+        itemId: item.menu_items.id,
+        name: item.menu_items.name,
+        price: item.menu_items.price,
+        image: item.menu_items.image_url,
+        category: item.menu_items.categories?.name || null,
+        itemTotal: item.menu_items.price * item.quantity,
+      })),
+    }));
+
+    return res.status(200).json({
+      success: true,
+      count: shapedOrders.length,
+      data: shapedOrders,
+    });
+
+  } catch (err) {
+    console.error("Fetch orders error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};

@@ -12,6 +12,8 @@ export default function Checkout() {
   const [showModal, setShowModal] = useState(false); // For payment selection modal
   const navigate = useNavigate();
   const location = useLocation();
+  const [codloading, setcodLoading] = useState(false); // ✅ page loading state
+
 
   const GST_PERCENT = 5;
 
@@ -65,6 +67,7 @@ export default function Checkout() {
 
   async function handleCod() {
     try {
+      setcodLoading(true)
       const token = getAccessToken();
       if (!token) return;
 
@@ -81,26 +84,30 @@ export default function Checkout() {
 
       if (!data.success) {
         alert("Failed to create order");
-        setLoading(false);
+        setcodLoading(false);
         return;
       }
 
       const { orderId, bill } = data;
       const amount = bill.grandTotal;
 
+      window.dispatchEvent(new Event("cartUpdated"));
+      setcodLoading(false)
+
       navigate("/payment-success", {
-        state: { orderNumber: orderId, amount: amount.toFixed(2), mode: "cod" },
+        state: { orderNumber: orderId, amount: amount.toFixed(2), mode: "cod", fromSuccess: true, },
+        replace:true
       });
     } catch (err) {
       console.error(err);
       alert("Verification error");
     } finally {
-      setLoading(false);
+      setcodLoading(false);
     }
   }
 
   // ✅ Full-page spinner while initial page is loading
-  if (loading && cart.length === 0) {
+  if ((loading && cart.length === 0) || codloading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-base-200">
         <span className="loading loading-spinner loading-xl"></span>
@@ -195,7 +202,7 @@ export default function Checkout() {
 
             <button
               className="btn btn-outline btn-error w-40"
-              onClick={() => navigate("/cart")}
+              onClick={() => navigate("/cart",{replace:true})}
             >
               Back to Cart
             </button>

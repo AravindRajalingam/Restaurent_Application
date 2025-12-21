@@ -1,10 +1,17 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { formatINR } from "./Utils/INR";
+import { useEffect } from "react";
 
 export default function PaymentSuccess() {
   const navigate = useNavigate();
   const location = useLocation();
   const { orderNumber, amount, mode } = location.state || {};
+
+  useEffect(() => {
+      if (!location.state?.fromSuccess) {
+        navigate("/cart", { replace: true });
+      }
+    }, []);
 
   if (mode === "online") {
     return (

@@ -13,6 +13,7 @@ import Myorders from './components/MyOrders.jsx';
 import AddMenuItem from './components/Admin/AddMenuItem.jsx';
 import SelectedItems from './components/SelectedItems.jsx';
 import { useEffect } from 'react';
+import { getAccessToken } from './components/Utils/getAccessToken.jsx';
 function App() {
 
   const API_URL = import.meta.env.VITE_API_URL;
@@ -20,6 +21,7 @@ function App() {
   async function refreshToken() {
     
     const expiry = localStorage.getItem("token_expiry");
+    
     
     const now = Date.now();
 
@@ -34,6 +36,8 @@ function App() {
       });
 
       const result = await res.json();
+      console.log(result);
+      
       
       if (result.success) {
         localStorage.setItem("access_token", result.access_token);

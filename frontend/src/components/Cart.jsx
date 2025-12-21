@@ -230,7 +230,7 @@ export default function Cart() {
 
               <div className="card-actions justify-center mt-8 gap-4">
                 <button
-                  onClick={() => navigate("/checkout", { state: { fromCart: true } })}
+                  onClick={() => navigate("/checkout", { state: { fromCart: true },replace:true })}
                   className="btn btn-primary w-48"
                 >
                   Proceed to Checkout

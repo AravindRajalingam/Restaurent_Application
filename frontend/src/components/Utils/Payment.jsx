@@ -57,7 +57,8 @@ export async function startPayment(navigate, setLoading) {
 
           if (verifyData.success) {
             navigate("/payment-success", {
-              state: { orderNumber: orderId, amount: amount.toFixed(2), mode: "online" },
+              state: { orderNumber: orderId, amount: amount.toFixed(2), mode: "online", fromSuccess: true },
+              replace:true
             });
           } else {
             alert("Payment verification failed!");

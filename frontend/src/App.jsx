@@ -12,7 +12,52 @@ import PaymentSuccess from './components/PaymentSuccess.jsx';
 import Myorders from './components/MyOrders.jsx';
 import AddMenuItem from './components/Admin/AddMenuItem.jsx';
 import SelectedItems from './components/SelectedItems.jsx';
+import { useEffect } from 'react';
 function App() {
+
+  const API_URL = import.meta.env.VITE_API_URL;
+
+  async function refreshToken() {
+    
+    const expiry = localStorage.getItem("token_expiry");
+    
+    const now = Date.now();
+
+    if (!expiry || now >= expiry) {
+      const refresh_token = localStorage.getItem("refresh_token");
+      if (!refresh_token) return;
+
+      const res = await fetch(`${API_URL}/auth/refresh-token`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refresh_token }),
+      });
+
+      const result = await res.json();
+      
+      if (result.success) {
+        localStorage.setItem("access_token", result.access_token);
+        localStorage.setItem("refresh_token", result.refresh_token);
+        localStorage.setItem("token_expiry", Date.now() + result.expires_in * 1000);
+        return result.access_token;
+      } else {
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        localStorage.removeItem("token_expiry");
+        return null;
+      }
+    }
+
+    return localStorage.getItem("access_token");
+  }
+
+  useEffect(() => {
+    async function refresh() {      
+      await refreshToken()
+    }
+    refresh()
+  }, []);
+
 
   return (
     <div>

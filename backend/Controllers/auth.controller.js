@@ -84,6 +84,7 @@ export const signin = async (req, res) => {
       });
     }
 
+
     res.status(200).json({
       success: true,
       message: "Login successful",
@@ -93,6 +94,7 @@ export const signin = async (req, res) => {
       },
       access_token: data.session.access_token,
       refresh_token: data.session.refresh_token,
+      token_expiry: data.session.expires_in
     });
   } catch (err) {
     console.error("Signin exception:", err);
@@ -154,4 +156,22 @@ export const getMe = async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }
+};
+
+
+export const refreshToken=async (req, res) => {
+  const { refresh_token } = req.body;
+
+  const { data, error } = await supabase.auth.refreshSession({
+    refresh_token,
+  });
+
+  if (error) return res.status(400).json({ success: false, message: error.message });  
+
+  res.json({
+    success: true,
+    access_token: data.session.access_token,
+    refresh_token: data.session.refresh_token,
+    expires_in: data.session.expires_in,
+  });
 };

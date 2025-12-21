@@ -25,7 +25,6 @@ export default function Cart() {
         return
       };
 
-
       try {
         const res = await fetch(`${API_URL}/cart/get-cart`, {
           headers: {
